@@ -5,7 +5,7 @@
 # SPDX short identifier: MIT
 
 ARG GRAFANA_VERSION=10.0.3
-FROM grafana/grafana-oss:10.0.3
+FROM grafana/grafana-oss:"${GRAFANA_VERSION}"
 
 ARG GRAFANA_VERSION=10.0.3
 
@@ -13,7 +13,7 @@ LABEL name="Grafana" \
   maintainer="i2 Group" \
   version="${GRAFANA_VERSION}" \
   revision="${revision}" \
-  summary="Grafana image based on Red Hat ubi." \
+  summary="Grafana image based on Grafana OSS." \
   description="Grafana is an interactive analytics and monitoring solution." \
   license="MIT"
 
