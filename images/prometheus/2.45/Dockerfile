@@ -7,7 +7,7 @@
 # Inspired by: https://github.com/prometheus/prometheus
 # hadolint ignore=DL3049
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.2 as builder
-ARG PROMETHEUS_VERSION="v2.45.0"
+ARG PROMETHEUS_VERSION="v2.45.1"
 
 ENV PROMETHEUS_TAG="tags/${PROMETHEUS_VERSION}"
 ENV PROMETHEUS="https://api.github.com/repos/prometheus/prometheus/releases/${PROMETHEUS_TAG}"
