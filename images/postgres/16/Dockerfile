@@ -42,7 +42,7 @@ RUN mkdir -p /run/secrets /backup /var/i2a-data \
   && chown -R "${USER}" /tmp /run/secrets /backup /var/i2a-data \
   && ln -s /usr/lib/postgresql/${POSTGRES_VERSION}/bin /usr/lib/postgresql/bin \
   && sed -i "s/#shared_preload_libraries = ''/shared_preload_libraries = 'pg_cron'/" /usr/share/postgresql/postgresql.conf.sample \
-  && echo "cron.database_name = 'ISTORE'" >> /usr/share/postgresql/postgresql.conf.sample
+  && echo "cron.database_name = 'postgres'" >> /usr/share/postgresql/postgresql.conf.sample
 
 USER "${USER}"
 

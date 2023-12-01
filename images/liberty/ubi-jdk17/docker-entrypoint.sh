@@ -28,7 +28,7 @@ function add_trusted_certificates() {
 }
 
 DEFAULT_SERVER_DIR=/opt/ol/wlp/usr/servers/defaultServer
-DB_NAME="ISTORE"
+DB_NAME="${DB_NAME:-"ISTORE"}"
 
 # Load secrets if they exist on disk and export them as envs
 file_env 'DB_PASSWORD'
