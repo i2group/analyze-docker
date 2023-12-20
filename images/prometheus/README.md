@@ -15,9 +15,10 @@ The image is inspired by the [prom/prometheus](https://hub.docker.com/r/prom/pro
 
 ## Supported tags
 
-* [`2`, `2.40`, `latest`](https://github.com/i2group/analyze-docker/blob/cd/images/prometheus/2.40/Dockerfile)
-* [`2.38`](https://github.com/i2group/analyze-docker/blob/cd/images/prometheus/2.38/Dockerfile)
-* [`2.36`](https://github.com/i2group/analyze-docker/blob/cd/images/prometheus/2.36/Dockerfile)
+* [`2`, `2.45`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/prometheus/2.45/Dockerfile)
+* [`2.40`](https://github.com/i2group/analyze-docker/blob/main/images/prometheus/2.40/Dockerfile)
+* [`2.38`](https://github.com/i2group/analyze-docker/blob/main/images/prometheus/2.38/Dockerfile)
+* [`2.36`](https://github.com/i2group/analyze-docker/blob/main/images/prometheus/2.36/Dockerfile)
 
 ## License
 

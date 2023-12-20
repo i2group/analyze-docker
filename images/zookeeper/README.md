@@ -15,7 +15,8 @@ The image is inspired by the official [zookeeper](https://hub.docker.com/_/zooke
 
 ## Supported tags
 
-* [`3`, `3.6`, `latest`](https://github.com/i2group/analyze-docker/blob/cd/images/zookeeper/3.6/Dockerfile)
+* [`3`, `3.9`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/zookeeper/3.9/Dockerfile)
+* [`3.6`](https://github.com/i2group/analyze-docker/blob/main/images/zookeeper/3.6/Dockerfile)
 
 ## License
 

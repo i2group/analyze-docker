@@ -17,7 +17,8 @@ The image with the `22` tag is inspired by the [ibmcom/websphere-liberty](https:
 
 ## Supported tags
 
-* [`ubi`, `latest`](https://github.com/i2group/analyze-docker/blob/cd/images/liberty/ubi/Dockerfile)
+* [`ubi-jdk17`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/liberty/ubi-jdk17/Dockerfile)
+* [`ubi`](https://github.com/i2group/analyze-docker/blob/main/images/liberty/ubi/Dockerfile)
 * `22 [deprecated]`
 
 ## License

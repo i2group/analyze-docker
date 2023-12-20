@@ -15,7 +15,8 @@ The image extends the official [grafana](https://hub.docker.com/r/grafana/grafan
 
 ## Supported tags
 
-* [`10`, `10.0`, `latest`](https://github.com/i2group/analyze-docker/blob/cd/images/grafana/10.0/Dockerfile)
+* [`10`, `10.2`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/grafana/10.2/Dockerfile)
+* [`10.0`](https://github.com/i2group/analyze-docker/blob/main/images/grafana/10.0/Dockerfile)
 
 ## License
 

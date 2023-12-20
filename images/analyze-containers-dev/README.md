@@ -15,7 +15,8 @@ The image is inspired by the [Microsoft Debian vscode-dev-container](https://git
 
 ## Supported tags
 
-* [`1`, `1.1`, `latest`](https://github.com/i2group/analyze-docker/blob/cd/images/analyze-containers-dev/1.1/.devcontainer/Dockerfile)
+* [`1`, `1.2`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-dev/1.2/.devcontainer/Dockerfile)
+* [`1.1`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-dev/1.1/.devcontainer/Dockerfile)
 * `1.0 [deprecated]`
 
 ## License

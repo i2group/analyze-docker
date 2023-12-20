@@ -15,7 +15,7 @@ The image extends the official [sqlserver](https://catalog.redhat.com/software/c
 
 ## Supported tags
 
-* [`2022`, `latest`](https://github.com/i2group/analyze-docker/blob/cd/images/sqlserver/2022/Dockerfile)
+* [`2022`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/sqlserver/2022/Dockerfile)
 
 ## License
 

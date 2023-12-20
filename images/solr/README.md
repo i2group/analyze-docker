@@ -15,7 +15,8 @@ The image is inspired by the official [solr](https://hub.docker.com/_/solr) Dock
 
 ## Supported tags
 
-* [`8`, `8.11`, `latest`](https://github.com/i2group/analyze-docker/blob/cd/images/solr/8.11/Dockerfile)
+* [`9`, `9.4`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.4/Dockerfile)
+* [`8`, `8.11`](https://github.com/i2group/analyze-docker/blob/main/images/solr/8.11/Dockerfile)
 
 
 ## License
