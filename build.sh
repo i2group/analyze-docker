@@ -106,6 +106,18 @@ function parse_arguments() {
   IMAGE_PREFIX="i2eng"
 }
 
+function validate() {
+  if [[ ! -d "images/${IMAGE_NAME}" ]]; then
+    echo "Unknown image: ${IMAGE_NAME}" >&2
+    exit 1
+  fi
+
+  if [[ ! -d "images/${IMAGE_NAME}/${VERSION}" ]]; then
+    echo "Unknown version: ${VERSION}" >&2
+    exit 1
+  fi
+}
+
 function prepare_build_context() {
   local env_file_path="utils/environment.sh"
   local build_folder="images/${IMAGE_NAME}/${VERSION}"
@@ -167,6 +179,7 @@ function build_image() {
 
 function main() {
   parse_arguments "$@"
+  validate
 
   prepare_build_context
   build_image
