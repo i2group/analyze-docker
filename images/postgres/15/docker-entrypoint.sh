@@ -41,6 +41,12 @@ function calculate_ssl_args() {
   local -r client_config_file="${secrets_dir}/${client_config_filename}"
   (
     echo "# Created by i2 entrypoint as SERVER_SSL=${SERVER_SSL}"
+    echo "local      all          all                trust"
+    echo "host       all          all  127.0.0.1/32  trust"
+    echo "host       all          all  ::1/128       trust"
+    echo "local      replication  all                trust"
+    echo "host       replication  all  127.0.0.1/32  trust"
+    echo "host       replication  all  ::1/128       trust"
     echo "hostssl    all          all  all           scram-sha-256"
   ) >"${client_config_file}"
   # postgres is fussy about file permissions on its SSL files, so ensure they're set acceptably
