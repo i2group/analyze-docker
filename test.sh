@@ -74,7 +74,13 @@ function test_image() {
   local default_args=()
   local -n extra_args="${3:-default_args}"
 
-  docker run "${extra_args[@]}" "${IMAGE}" bash -c "set -e; ${test_command}"
+  if docker run "${extra_args[@]}" "${image_name}" bash -c "set -e; ${test_command}"; then
+    echo "  PASSED"
+  else
+    local exit_code="$?"
+    echo "ERROR: Tests failed, exit code ${exit_code}" >&2
+    return "${exit_code}"
+  fi
 }
 
 function main() {
