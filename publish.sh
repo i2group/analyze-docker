@@ -82,10 +82,6 @@ function parse_arguments() {
     print_error_and_usage "Version needs to be passed to be able to build"
   fi
 
-  if [[ -z "${TAG:-""}" ]]; then
-    TAG="${VERSION}"
-  fi
-
   STABLE_MAJOR_TAG="${VERSION%%.*}"
 }
 
@@ -106,9 +102,11 @@ function main() {
   parse_arguments "$@"
 
   # All these commands will reuse the cache from the previously run build
-  # Push unique image name
-  ./build.sh -i "${IMAGE_NAME}" -v "${VERSION}" -t "${TAG}" -m -p
-
+  if [[ -n "${TAG:-""}" ]]; then
+    # Push unique image name
+    ./build.sh -i "${IMAGE_NAME}" -v "${VERSION}" -t "${TAG}" -m -p
+  fi
+  
   # Push stable minor tag
   ./build.sh -i "${IMAGE_NAME}" -v "${VERSION}" -t "${VERSION}" -m -p
 
