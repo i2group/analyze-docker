@@ -28,7 +28,8 @@ COPY --chown=1001:0 environment.sh /opt/environment.sh
 
 USER root
 
-RUN dnf -y install \
+RUN dnf -y update \
+  && dnf -y install \
   jq \
   # Clean up
   && dnf clean all
