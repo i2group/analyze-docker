@@ -104,7 +104,8 @@ RUN set -eux; \
   tar -zxf "$DISTRO_NAME.tar.gz"; \
   mv "$DISTRO_NAME/conf/"* "$ZOO_CONF_DIR"; \
   rm -rf "$GNUPGHOME" "$DISTRO_NAME.tar.gz" "$DISTRO_NAME.tar.gz.asc"; \
-  chown -R zookeeper:zookeeper "/$DISTRO_NAME"
+  chown -R zookeeper:zookeeper "/$DISTRO_NAME"; \
+  ln -s "/$DISTRO_NAME" /apache-zookeeper-bin
 
 WORKDIR $DISTRO_NAME
 VOLUME ["$ZOO_DATA_DIR", "$ZOO_DATA_LOG_DIR", "$ZOO_LOG_DIR"]
