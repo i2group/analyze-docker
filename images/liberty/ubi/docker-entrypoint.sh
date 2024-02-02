@@ -261,7 +261,9 @@ rm -f /opt/ol/wlp/usr/servers/defaultServer/server.env
 
 for file in /opt/entrypoint.d/*; do
   if [ -f "${file}" ]; then
-    chmod +x "${file}"
+    if [ ! -x "${file}" ]; then
+      chmod +x "${file}"
+    fi
     # shellcheck disable=SC1090
     . "${file}"
   fi
