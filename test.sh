@@ -74,7 +74,7 @@ function test_image() {
   local default_args=()
   local -n extra_args="${3:-default_args}"
 
-  if docker run "${extra_args[@]}" "${image_name}" bash -c "set -e; ${test_command}"; then
+  if docker run --rm "${extra_args[@]}" "${image_name}" bash -c "set -e; ${test_command}"; then
     echo "  PASSED"
   else
     local exit_code="$?"
@@ -147,8 +147,12 @@ function main() {
     test_image "${IMAGE}" "grafana -h;" docker_args
     ;;
   "i2group/i2eng-sqlserver"*)
-    docker_args=("--entrypoint=")
+    docker_args=("--entrypoint=" "--platform=linux/amd64")
     test_image "${IMAGE}" "/opt/mssql-tools/bin/sqlcmd -?;" docker_args
+    ;;
+  "i2group/i2eng-db2"*)
+    docker_args=("--entrypoint=" "--platform=linux/amd64")
+    test_image "${IMAGE}" "test -f /opt/ibm/db2/V11.5/bin/db2;" docker_args
     ;;
   *)
     print_error_and_exit "No tests for image: ${IMAGE}"

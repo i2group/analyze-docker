@@ -144,10 +144,13 @@ function build_image() {
 
   [[ -d "images/${IMAGE_NAME}/${VERSION}/.devcontainer" ]] && is_dev_container="true"
 
-  # SQL Server only supports amd64
-  if [[ "${MULTI_ARCH_FLAG}" == "true" && "${IMAGE_NAME}" != "sqlserver" ]]; then
+  # SQL Server & Db2 only supports amd64
+  if [[ "${IMAGE_NAME}" == "sqlserver" || "${IMAGE_NAME}" == "db2" ]]; then
+    extra_args+=("--platform=linux/amd64")
+  elif [[ "${MULTI_ARCH_FLAG}" == "true" ]]; then
     extra_args+=("--platform=linux/amd64,linux/arm64")
-  elif [[ "${MULTI_ARCH_FLAG}" != "true" && "${is_dev_container}" == "false" ]]; then
+  fi
+  if [[ "${MULTI_ARCH_FLAG}" != "true" && "${is_dev_container}" == "false" ]]; then
     extra_args+=("--load")
   fi
   if [[ "${PUSH_FLAG}" == "true" ]]; then
