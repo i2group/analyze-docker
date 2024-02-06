@@ -23,6 +23,13 @@ USER root
 # User mssql is created by the base image
 ARG USER=mssql
 
+# Install Full-Text Search capability
+RUN curl -o /etc/yum.repos.d/mssql-server.repo https://packages.microsoft.com/config/rhel/8/mssql-server-2022.repo \
+  && ACCEPT_EULA=Y dnf -y update \
+  && dnf -y --nodocs install mssql-server-fts \
+  # Clean up
+  && dnf clean all
+
 COPY --chown="${USER}:0" docker-entrypoint.sh /opt/docker-entrypoint.sh
 COPY --chown="${USER}:0" environment.sh /opt/environment.sh
 RUN mkdir -p /run/secrets /backup /var/i2a-data \
