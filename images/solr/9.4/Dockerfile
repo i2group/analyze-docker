@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.3
 # i2, i2 Group, the i2 Group logo, and i2group.com are trademarks of N.Harris Computer Corporation.
 # © N.Harris Computer Corporation (2022-2024)
 #
@@ -6,7 +6,7 @@
 #
 # Inspired by: https://github.com/apache/solr-docker
 
-FROM eclipse-temurin:17-ubi9-minimal
+FROM i2group/i2eng-analyze-containers-base:ubi-jdk17
 
 # Dynamic labels
 ARG revision
@@ -24,15 +24,7 @@ ARG SOLR_DOWNLOAD_SERVER="https://www.apache.org/dyn/closer.lua?action=download&
 
 RUN set -ex; \
   microdnf -y update; \
-  microdnf -y --setopt=install_weak_deps=0 install \
-    dirmngr \
-    findutils \
-    gnupg \
-    gpg \
-    openssl \
-    shadow-utils \
-    wget \
-  ; \
+  microdnf -y --setopt=install_weak_deps=0 install wget gpg gnupg dirmngr; \
   rm -rf /var/lib/apt/lists/*; \
   export SOLR_BINARY="solr-$SOLR_VERSION$SOLR_DIST.tgz"; \
   MAX_REDIRECTS=3; \
@@ -78,30 +70,32 @@ RUN set -ex; \
   rm "/opt/$SOLR_BINARY"*; \
   microdnf clean all;
 
+
+
 LABEL name="Apache Solr" \
   maintainer="i2 Group" \
   version="${SOLR_VERSION}" \
   revision="${revision}" \
-  summary="Apache Solr image based on Red Hat ubi." \
+  summary="Apache Solr image based on Red Hat's UBI." \
   description="Solr is the popular, blazing fast, open source search platform from the Apache Lucene project." \
   license="MIT"
 
 # The Java Security Manager is disabled since it is being deprecated and subject to removal in a future release.
 # https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/SecurityManager.html
 ENV JAVA_HOME="/opt/java/openjdk" \
-  SOLR_SECURITY_MANAGER_ENABLED="false" \
-  SOLR_USER="solr" \
-  SOLR_UID="8983" \
-  SOLR_GROUP="solr" \
-  SOLR_GID="8983" \
-  PATH="/opt/solr/bin:/opt/solr/docker/scripts:/opt/solr/prometheus-exporter/bin:/opt/java/openjdk:$PATH" \
-  SOLR_INCLUDE=/etc/default/solr.in.sh \
-  SOLR_HOME=/var/solr/data \
-  SOLR_PID_DIR=/var/solr \
-  SOLR_LOGS_DIR=/var/solr/logs \
-  LOG4J_PROPS=/var/solr/log4j2.xml \
-  SOLR_JETTY_HOST="0.0.0.0" \
-  SOLR_ZK_EMBEDDED_HOST="0.0.0.0"
+    SOLR_SECURITY_MANAGER_ENABLED="false" \
+    SOLR_USER="solr" \
+    SOLR_UID="8983" \
+    SOLR_GROUP="solr" \
+    SOLR_GID="8983" \
+    PATH="/opt/solr/bin:/opt/solr/docker/scripts:/opt/solr/prometheus-exporter/bin:/opt/java/openjdk:$PATH" \
+    SOLR_INCLUDE=/etc/default/solr.in.sh \
+    SOLR_HOME=/var/solr/data \
+    SOLR_PID_DIR=/var/solr \
+    SOLR_LOGS_DIR=/var/solr/logs \
+    LOG4J_PROPS=/var/solr/log4j2.xml \
+    SOLR_JETTY_HOST="0.0.0.0" \
+    SOLR_ZK_EMBEDDED_HOST="0.0.0.0"
 
 RUN set -ex; \
   groupadd -r --gid "$SOLR_GID" "$SOLR_GROUP"; \
@@ -128,29 +122,16 @@ RUN set -ex; \
 COPY --chown=0:0 "docker-entrypoint.sh" "/opt/solr/docker-entrypoint.sh"
 COPY --chown=0:0 "environment.sh" "/opt/solr/environment.sh"
 
-ARG GOSU_VERSION=1.17
-
+# Gosu is part of the base image so we don't try to reinstall
+# Netcat is ncat which is part of nmap package
+# jattach needs to be manually downloaded
 RUN set -ex; \
-  ARCH="$(uname -m)"; \
-  if [ "${ARCH}" != "aarch64" ]; then \
-    wget -nv "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" -O /usr/local/bin/gosu; \
-  else \
-    wget -nv "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-arm64" -O /usr/local/bin/gosu; \
-  fi; \
-  chmod +x /usr/local/bin/gosu; \
-  # Verify that the binary works
-  gosu nobody true; \
-  cd /usr/local/bin; wget -nv https://github.com/apangin/jattach/releases/download/v2.2/jattach; chmod 755 jattach; \
-  echo >jattach.sha512 "53a5d9b49875bc4437ac5b20440e48c66fa42df4aa42c3e50b03a3e5937a855a071a4e65c53b304a47c11353f817feac47ef6d7d86bd9641dc11d2e7d0af6a7a  jattach"; \
-  sha512sum -c jattach.sha512; rm jattach.sha512; \
-  microdnf -y update; \
-  microdnf -y --setopt=install_weak_deps=0 install \
-    acl \
-    lsof \
-    procps \
-    nmap \
-    ; \
-  microdnf clean all;
+    cd /usr/local/bin; wget -nv https://github.com/jattach/jattach/releases/download/v2.2/jattach; chmod 755 jattach; \
+    echo >jattach.sha512 "53a5d9b49875bc4437ac5b20440e48c66fa42df4aa42c3e50b03a3e5937a855a071a4e65c53b304a47c11353f817feac47ef6d7d86bd9641dc11d2e7d0af6a7a  jattach"; \
+    sha512sum -c jattach.sha512; rm jattach.sha512; \
+    microdnf update; \
+    microdnf -y --setopt=install_weak_deps=0 install acl lsof procps wget nmap; \
+    microdnf clean all;
 
 VOLUME /var/solr
 EXPOSE 8983

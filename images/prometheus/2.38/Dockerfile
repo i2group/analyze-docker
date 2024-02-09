@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.3
 # i2, i2 Group, the i2 Group logo, and i2group.com are trademarks of N.Harris Computer Corporation.
 # © N.Harris Computer Corporation (2022-2023)
 #
@@ -40,7 +40,7 @@ LABEL name="Prometheus" \
   maintainer="i2 Group" \
   version="${PROMETHEUS_VERSION}" \
   revision="${revision}" \
-  summary="Prometheus image based on Red Hat ubi." \
+  summary="Prometheus image based on Red Hat's UBI." \
   description="Prometheus is a systems and service monitoring system." \
   license="MIT"
 

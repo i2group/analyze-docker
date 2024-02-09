@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.3
 # i2, i2 Group, the i2 Group logo, and i2group.com are trademarks of N.Harris Computer Corporation.
 # © N.Harris Computer Corporation (2022-2023)
 #
@@ -27,7 +27,7 @@ LABEL name="Apache Solr" \
   maintainer="i2 Group" \
   version="${SOLR_VERSION}" \
   revision="${revision}" \
-  summary="Apache Solr image based on Red Hat ubi." \
+  summary="Apache Solr image based on Red Hat's UBI." \
   description="Solr is the popular, blazing fast, open source NoSQL search platform from the Apache Lucene project." \
   license="MIT"
 

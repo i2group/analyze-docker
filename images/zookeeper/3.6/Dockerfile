@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.3
 # i2, i2 Group, the i2 Group logo, and i2group.com are trademarks of N.Harris Computer Corporation.
 # © N.Harris Computer Corporation (2022-2023)
 #
@@ -19,7 +19,7 @@ LABEL name="Apache ZooKeeper" \
   maintainer="i2 Group" \
   version="${ZK_VERSION}" \
   revision="${revision}" \
-  summary="Apache ZooKeeper image based on Red Hat ubi." \
+  summary="Apache ZooKeeper image based on Red Hat's UBI." \
   description="Apache ZooKeeper is a software project of the Apache Software Foundation, \
   providing an open source distributed configuration service, synchronization service, \
   and naming registry for large distributed systems." \

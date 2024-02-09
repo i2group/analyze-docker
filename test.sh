@@ -154,6 +154,11 @@ function main() {
     docker_args=("--entrypoint=" "--platform=linux/amd64")
     test_image "${IMAGE}" "test -f /opt/ibm/db2/V11.5/bin/db2;" docker_args
     ;;
+  "i2group/i2eng-analyze-containers-base"*)
+    test_image "${IMAGE}" "openssl version; \
+    tar --help; \
+    gosu nobody true;" docker_args
+    ;;
   *)
     print_error_and_exit "No tests for image: ${IMAGE}"
     ;;
