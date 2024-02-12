@@ -4,10 +4,10 @@
 #
 # SPDX short identifier: MIT
 
-ARG SQLSERVER_VERSION=2022-latest
+ARG SQLSERVER_VERSION=2022-CU4-rhel-8.7
 FROM mcr.microsoft.com/mssql/rhel/server:${SQLSERVER_VERSION}
 
-ARG SQLSERVER_VERSION=2022-latest
+ARG SQLSERVER_VERSION=2022-CU4-rhel-8.7
 # Dynamic labels
 ARG revision
 
