@@ -4,10 +4,13 @@
 #
 # SPDX short identifier: MIT
 
-ARG SQLSERVER_VERSION=2022-CU4-rhel-8.7
-FROM mcr.microsoft.com/mssql/rhel/server:${SQLSERVER_VERSION}
+ARG SQLSERVER_VERSION=2022
+FROM "mcr.microsoft.com/mssql/rhel/server:${SQLSERVER_VERSION}-latest"
 
-ARG SQLSERVER_VERSION=2022-CU4-rhel-8.7
+ARG SQLSERVER_VERSION=2022
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Dynamic labels
 ARG revision
 
@@ -25,15 +28,18 @@ ARG USER=mssql
 
 COPY --chown="${USER}:0" docker-entrypoint.sh /opt/docker-entrypoint.sh
 COPY --chown="${USER}:0" environment.sh /opt/environment.sh
-RUN mkdir -p /run/secrets /backup /var/i2a-data \
-  && chown -R "${USER}" /var/opt/mssql /tmp /run/secrets /backup /var/i2a-data
 
-# Install Full-Text Search capability
-RUN curl -o /etc/yum.repos.d/mssql-server.repo https://packages.microsoft.com/config/rhel/8/mssql-server-2022.repo \
-  && ACCEPT_EULA=Y dnf -y update \
-  && dnf -y --nodocs install mssql-server-fts \
-  # Clean up
-  && dnf clean all
+RUN set -eux; \
+  mkdir -p /run/secrets /backup /var/i2a-data; \
+  chown -R "${USER}" /tmp /run/secrets /backup /var/i2a-data; \
+  # Install Full-Text Search capability
+  # Gets the RedHat OS version and uses it for the mssql package download
+  RHEL_VERSION="$(rpm -q --queryformat '%{VERSION}' redhat-release | cut -d. -f1)"; \
+  curl -o /etc/yum.repos.d/mssql-server.repo "https://packages.microsoft.com/config/rhel/${RHEL_VERSION}/mssql-server-${SQLSERVER_VERSION}.repo"; \
+  # ACCEPT_EULA=y to update mssql packages
+  ACCEPT_EULA=Y dnf -y update; \
+  dnf -y --nodocs install mssql-server-fts; \
+  dnf clean all;
 
 USER "${USER}"
 
