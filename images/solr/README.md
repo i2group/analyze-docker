@@ -2,22 +2,22 @@
 
 Used for Solr in a deployment of i2 Analyze.
 
-* **Maintained by:**  
+- **Maintained by:**  
   [i2 Group](https://i2group.com/)
 
-* **Where to get help:**  
+- **Where to get help:**  
   [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
 
-* **Using this image:**  
+- **Using this image:**  
   [Solr](https://i2group.github.io/analyze-containers/content/images%20and%20containers/solr.html)
 
 The image is inspired by the official [solr](https://hub.docker.com/_/solr) Docker image.
 
 ## Supported tags
 
-* [`9`, `9.4`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.4/Dockerfile)
-* [`8`, `8.11`](https://github.com/i2group/analyze-docker/blob/main/images/solr/8.11/Dockerfile)
-
+- [`9`, `9.5`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.5/Dockerfile)
+- [`9.4`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.4/Dockerfile)
+- [`8`, `8.11`](https://github.com/i2group/analyze-docker/blob/main/images/solr/8.11/Dockerfile)
 
 ## License
 
