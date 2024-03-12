@@ -6,6 +6,11 @@
 
 set -eo pipefail
 
+# For debug purposes only
+if [[ "${DEBUG}" == "true" ]]; then
+  set -x
+fi
+
 . /opt/environment.sh
 
 file_env 'DB_PASSWORD'

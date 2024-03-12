@@ -37,7 +37,8 @@ RUN set -ex; \
   esac; \
   export DOWNLOAD_URL="$SOLR_DOWNLOAD_SERVER/$SOLR_VERSION/$SOLR_BINARY"; \
   echo "downloading $DOWNLOAD_URL"; \
-  if ! wget -t 10 --max-redirect $MAX_REDIRECTS --retry-connrefused -nv "$DOWNLOAD_URL" -O "/opt/$SOLR_BINARY"; then rm -f "/opt/$SOLR_BINARY"; fi; \
+  # Change to verbose to debug why we are hanging on download
+  if ! wget -t 10 --max-redirect $MAX_REDIRECTS --retry-connrefused -v "$DOWNLOAD_URL" -O "/opt/$SOLR_BINARY"; then rm -f "/opt/$SOLR_BINARY"; fi; \
   if [ ! -f "/opt/$SOLR_BINARY" ]; then echo "failed download attempt for $SOLR_BINARY"; exit 1; fi; \
   echo "$SOLR_SHA512 */opt/$SOLR_BINARY" | sha512sum -c -; \
   if [ -z "$SKIP_GPG_CHECK" ]; then \

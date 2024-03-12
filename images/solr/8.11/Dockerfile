@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.3
 # i2, i2 Group, the i2 Group logo, and i2group.com are trademarks of N.Harris Computer Corporation.
-# © N.Harris Computer Corporation (2022-2023)
+# © N.Harris Computer Corporation (2022-2024)
 #
 # SPDX short identifier: MIT
 #
@@ -93,7 +93,8 @@ RUN set -ex; \
   for url in $SOLR_DOWNLOAD_URL $SOLR_CLOSER_URL $SOLR_DIST_URL $SOLR_ARCHIVE_URL; do \
   if [ -f "/opt/solr-$SOLR_VERSION.tgz" ]; then break; fi; \
   echo "downloading $url"; \
-  if wget -t 10 --max-redirect $MAX_REDIRECTS --retry-connrefused -nv "$url" -O "/opt/solr-$SOLR_VERSION.tgz"; then break; else rm -f "/opt/solr-$SOLR_VERSION.tgz"; fi; \
+  # Change to verbose to debug why we are hanging on download
+  if wget -t 10 --max-redirect $MAX_REDIRECTS --retry-connrefused -v "$url" -O "/opt/solr-$SOLR_VERSION.tgz"; then break; else rm -f "/opt/solr-$SOLR_VERSION.tgz"; fi; \
   done; \
   if [ ! -f "/opt/solr-$SOLR_VERSION.tgz" ]; then echo "failed all download attempts for solr-$SOLR_VERSION.tgz"; exit 1; fi; \
     if [ -z "$SKIP_GPG_CHECK" ]; then \

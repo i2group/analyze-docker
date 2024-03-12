@@ -1,6 +1,6 @@
 #!/bin/bash
 # i2, i2 Group, the i2 Group logo, and i2group.com are trademarks of N.Harris Computer Corporation.
-# © N.Harris Computer Corporation (2022-2023)
+# © N.Harris Computer Corporation (2022-2024)
 
 # usage: file_env VarName [defaultValue]
 #    e.g:

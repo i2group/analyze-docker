@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 # i2, i2 Group, the i2 Group logo, and i2group.com are trademarks of N.Harris Computer Corporation.
-# © N.Harris Computer Corporation (2022-2023)
+# © N.Harris Computer Corporation (2022-2024)
 #
 # SPDX short identifier: MIT
 
 set -e
+
+# For debug purposes only
+if [[ "${DEBUG}" == "true" ]]; then
+  set -x
+fi
 
 . /opt/environment.sh
 
@@ -20,7 +25,7 @@ if [[ "${SERVER_SSL}" == "true" ]]; then
     exit 1
   fi
 
-  TMP_SECRETS=/tmp/i2acerts
+  TMP_SECRETS="/tmp/i2acerts"
   KEY="${TMP_SECRETS}/server.key"
   CER="${TMP_SECRETS}/server.cer"
 
