@@ -96,6 +96,8 @@ if [[ ! -f "$ZOO_CONF_DIR/zoo.cfg" ]]; then
 
   if [[ "${SERVER_SSL}" == "true" ]]; then
     {
+      echo "ssl.protocol=TLSv1.2"
+      echo "ssl.enabledProtocols=TLSv1.2"
       echo "ssl.trustStore.location=${TRUSTSTORE}"
       echo "ssl.keyStore.location=${KEYSTORE}"
       echo "sslQuorum=true"
