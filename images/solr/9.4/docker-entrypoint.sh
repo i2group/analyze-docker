@@ -62,7 +62,10 @@ if [[ "${SERVER_SSL}" == "true" || "${SOLR_ZOO_SSL_CONNECTION}" == "true" ]]; th
   run_quietly openssl pkcs12 -export -in "${CER}" -inkey "${KEY}" -certfile "${CA_CER}" -passout env:KEYSTORE_PASS -out "${KEYSTORE}"
 
   OUTPUT=$(keytool -importcert -noprompt -alias ca -keystore "${TRUSTSTORE}" -file ${CA_CER} -storepass:env KEYSTORE_PASS -storetype PKCS12 2>&1)
-  if [[ "$OUTPUT" != "Certificate was added to keystore" ]]; then
+  
+  # Need to check that it was added since -noprompt could skip the certificate but the output could 
+  # have warning information
+  if [[ "${OUTPUT}" != *"Certificate was added to keystore"* ]]; then
     echo "$OUTPUT"
     exit 1
   fi
