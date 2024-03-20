@@ -134,13 +134,13 @@ if [[ "${SERVER_SSL}" == "true" || "${SOLR_ZOO_SSL_CONNECTION}" == "true" ||
   add_to_java_keystore "${TRUSTSTORE}" KEYSTORE_PASS \
     SSL_CA_CERTIFICATE "${SSL_CA_CERTIFICATE}" \
     SSL_ADDITIONAL_TRUST_CERTIFICATES "${SSL_ADDITIONAL_TRUST_CERTIFICATES}"
+fi
 
-  file_env 'APP_SECRETS'
-  if [[ -n "${APP_SECRETS}" && "${APP_SECRETS}" != "None" ]]; then
-    while read -r key value; do
-      declare -x "$key"="$value"
-    done < <(jq -r 'keys[] as $k | "\($k) \(.[$k])"' < <(echo "${APP_SECRETS}"))
-  fi
+file_env 'APP_SECRETS'
+if [[ -n "${APP_SECRETS}" && "${APP_SECRETS}" != "None" ]]; then
+  while read -r key value; do
+    declare -x "$key"="$value"
+  done < <(jq -r 'keys[] as $k | "\($k) \(.[$k])"' < <(echo "${APP_SECRETS}"))
 fi
 
 if [[ "${GATEWAY_SSL_CONNECTION}" == "true" ]]; then
