@@ -6,7 +6,18 @@
 
 FROM eclipse-temurin:17-ubi9-minimal
 
+# Dynamic labels
+ARG revision
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+LABEL name="Analyze Containers Base" \
+  version="ubi" \
+  revision="${revision}" \
+  maintainer="i2 Group" \
+  summary="Image for Analyze Containers deployment with OpenJDK 17 and Red Hat's UBI minimal." \
+  description="This image contains OpenJDK 17 Eclipse Temurin runtime and Red Hat's UBI as the base OS." \
+  license="MIT"
 
 ARG GOSU_VERSION=1.17
 

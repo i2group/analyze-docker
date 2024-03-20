@@ -159,6 +159,11 @@ function main() {
     tar --help; \
     gosu nobody true;" docker_args
     ;;
+  "i2group/i2eng-analyze-containers-connectors-base"*)
+    test_image "${IMAGE}" "openssl version; \
+    node --version; \
+    npm --version;" docker_args
+    ;;
   *)
     print_error_and_exit "No tests for image: ${IMAGE}"
     ;;
