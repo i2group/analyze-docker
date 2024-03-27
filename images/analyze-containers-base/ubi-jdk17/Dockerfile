@@ -35,6 +35,7 @@ RUN set -eux; \
   gzip \
   ca-certificates \
   gnupg \
+  rsync \
   openssl; \
   microdnf clean all;
 

@@ -31,6 +31,7 @@ USER root
 RUN dnf -y update \
   && dnf -y install \
   jq \
+  rsync \
   # Clean up
   && dnf clean all
 
