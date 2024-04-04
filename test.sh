@@ -157,7 +157,11 @@ function main() {
   "i2group/i2eng-analyze-containers-base"*)
     test_image "${IMAGE}" "openssl version; \
     tar --help; \
-    gosu nobody true;" docker_args
+    gosu nobody true;"
+    ;;
+  "i2group/i2eng-textchart-"*)
+    test_image "${IMAGE}" "java -version; \
+    gosu nobody true;"
     ;;
   "i2group/i2eng-analyze-containers-connectors-base"*)
     test_image "${IMAGE}" "openssl version; \

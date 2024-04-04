@@ -104,6 +104,7 @@ function parse_arguments() {
 
   IMAGE_REPO="i2group"
   IMAGE_PREFIX="i2eng"
+  NEXUS_USERNAME="${NEXUS_USERNAME:-"i2group-cci-account"}"
 }
 
 function validate() {
@@ -116,6 +117,71 @@ function validate() {
     echo "Unknown version: ${VERSION}" >&2
     exit 1
   fi
+}
+
+function get_rosoka_package() {
+  local package_name="$1"
+  local package_version="${2:-"${VERSION}"}"
+
+  if [[ -z "${NEXUS_TOKEN}" ]]; then
+    print_error_and_exit "Please provide authentication for Nexus. Variable NEXUS_TOKEN is missing."
+  fi
+
+  local url="https://corp.imtholdings.com/nexus/repository/maven-releases/com/rosoka/${package_name}/${package_version}/${package_name}-${package_version}.jar"
+  curl -s -u "${NEXUS_USERNAME}":"${NEXUS_TOKEN}" -X GET "${url}" -H "accept: application/json" -o "${package_name}.jar"
+}
+
+function download_textchart_worker() {
+  local build_folder="$1"
+
+  if [[ -d "${build_folder}/rsm" ]]; then
+    rm -rf "${build_folder}/rsm"
+  fi
+  mkdir -p "${build_folder}/rsm"
+  pushd "${build_folder}/rsm"
+    get_rosoka_package "RosokaServerWorker"
+    get_rosoka_package "RosokaServerWorkerDaemon"
+  popd
+}
+
+function download_textchart_manager() {
+  local build_folder="$1"
+  local oconnect_jars=("RosokaServerFileOutConnector" "RosokaServerCSVOutputConnector" "RosokaServerI2SQLOutConnector")
+  local iconnect_jars=("RosokaServerScannerConnector")
+
+  local jar_name
+
+  if [[ -d "${build_folder}/rsm" ]]; then
+    rm -rf "${build_folder}/rsm"
+  fi
+  mkdir -p "${build_folder}/rsm/oconnect" "${build_folder}/rsm/iconnect"
+  pushd "${build_folder}/rsm"
+    get_rosoka_package "RosokaServerManager"
+    pushd "oconnect"
+      for jar_name in "${oconnect_jars[@]}"; do
+        get_rosoka_package "$jar_name"
+      done
+    popd
+    pushd "iconnect"
+      for jar_name in "${iconnect_jars[@]}"; do
+        get_rosoka_package "$jar_name"
+      done
+    popd
+  popd
+}
+
+function download_textchart_data_access() {
+  local build_folder="$1"
+
+  local jar_name
+
+  if [[ -d "${build_folder}/rsm" ]]; then
+    rm -rf "${build_folder}/rsm"
+  fi
+  mkdir -p "${build_folder}/rsm"
+  pushd "${build_folder}/rsm"
+    get_rosoka_package "RosokaDataAccessServer"
+  popd
 }
 
 function prepare_build_context() {
@@ -134,6 +200,16 @@ function prepare_build_context() {
   fi
 
   cp "${env_file_path}" "${env_context_path}"
+
+  if [[ "${IMAGE_NAME}" == "textchart-manager" ]]; then
+    download_textchart_manager "${build_folder}"
+  fi
+  if [[ "${IMAGE_NAME}" == "textchart-worker" ]]; then
+    download_textchart_worker "${build_folder}"
+  fi
+  if [[ "${IMAGE_NAME}" == "textchart-data-access" ]]; then
+    download_textchart_data_access "${build_folder}"
+  fi
 }
 
 function build_image() {
@@ -174,6 +250,7 @@ function build_image() {
       "${extra_args[@]}" \
       --cache-from type=local,src="/tmp/analyze-docker-cache" --cache-to type=local,dest="/tmp/analyze-docker-cache" \
       --build-arg revision="${CIRCLE_BUILD_NUM:-dev}" \
+      --build-arg version="${VERSION}" \
       --tag "${full_image_name}" "${build_folder}"
   fi
   docker buildx rm "analyze-docker"
