@@ -242,13 +242,13 @@ function build_image() {
   if [[ "${is_dev_container}" == "true" ]]; then
     # Use devcontainer CLI instead to build image. This uses buildx internally already.
     export DEV_CONTAINER_VERSION="${VERSION}"
-    devcontainer build \
+    devcontainer build --no-cache \
       "${extra_args[@]}" \
       --image-name "${full_image_name}" "${build_folder}"
   else
     docker buildx build \
       "${extra_args[@]}" \
-      --cache-from type=local,src="/tmp/analyze-docker-cache" --cache-to type=local,dest="/tmp/analyze-docker-cache" \
+      --pull --no-cache \
       --build-arg revision="${CIRCLE_BUILD_NUM:-dev}" \
       --build-arg version="${VERSION}" \
       --tag "${full_image_name}" "${build_folder}"
