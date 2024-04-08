@@ -122,13 +122,14 @@ function validate() {
 function get_rosoka_package() {
   local package_name="$1"
   local package_version="${2:-"${VERSION}"}"
+  local package_extension="${3:-"jar"}"
 
   if [[ -z "${NEXUS_TOKEN}" ]]; then
     print_error_and_exit "Please provide authentication for Nexus. Variable NEXUS_TOKEN is missing."
   fi
 
-  local url="https://corp.imtholdings.com/nexus/repository/maven-releases/com/rosoka/${package_name}/${package_version}/${package_name}-${package_version}.jar"
-  curl -s -u "${NEXUS_USERNAME}":"${NEXUS_TOKEN}" -X GET "${url}" -H "accept: application/json" -o "${package_name}.jar"
+  local url="https://corp.imtholdings.com/nexus/repository/maven-releases/com/rosoka/${package_name}/${package_version}/${package_name}-${package_version}.${package_extension}"
+  curl -s -u "${NEXUS_USERNAME}":"${NEXUS_TOKEN}" -X GET "${url}" -H "accept: application/json" -o "${package_name}.${package_extension}"
 }
 
 function download_textchart_worker() {
@@ -154,7 +155,7 @@ function download_textchart_manager() {
   if [[ -d "${build_folder}/rsm" ]]; then
     rm -rf "${build_folder}/rsm"
   fi
-  mkdir -p "${build_folder}/rsm/oconnect" "${build_folder}/rsm/iconnect"
+  mkdir -p "${build_folder}/rsm/oconnect" "${build_folder}/rsm/iconnect" "${build_folder}/rsm/styles/_default"
   pushd "${build_folder}/rsm"
     get_rosoka_package "RosokaServerManager"
     pushd "oconnect"
@@ -166,6 +167,11 @@ function download_textchart_manager() {
       for jar_name in "${iconnect_jars[@]}"; do
         get_rosoka_package "$jar_name"
       done
+    popd
+    pushd "styles/_default"
+      # TODO: Are this versions correct or do they need to come from a different file? E.g. pom.xml
+      get_rosoka_package "LxBundle" "7.5.2.2" "zip"
+      get_rosoka_package "GxBundle" "7.3.0.0" "tbz2"
     popd
   popd
 }

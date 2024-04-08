@@ -160,8 +160,9 @@ function main() {
     gosu nobody true;"
     ;;
   "i2group/i2eng-textchart-"*)
+    docker_args=("-e" "LICENSE=dev" "-e" "ADMIN_USER=admin" "-e" "ADMIN_PASSWORD=12345")
     test_image "${IMAGE}" "java -version; \
-    gosu nobody true;"
+    gosu nobody true;" docker_args
     ;;
   "i2group/i2eng-analyze-containers-connectors-base"*)
     test_image "${IMAGE}" "openssl version; \
