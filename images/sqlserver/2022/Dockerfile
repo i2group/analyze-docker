@@ -41,15 +41,6 @@ RUN set -eux; \
   dnf -y --nodocs install mssql-server-fts; \
   dnf clean all;
 
-# Temporary fix until the latest image has mssql-tools v18
-RUN curl https://packages.microsoft.com/config/rhel/9/prod.repo \
-  | tee /etc/yum.repos.d/mssql-release.repocurl https://packages.microsoft.com/config/rhel/9/prod.repo \
-  | tee /etc/yum.repos.d/mssql-release.repo; \
-  dnf remove mssql-tools unixODBC-utf16 unixODBC-utf16-devel; \
-  ACCEPT_EULA=Y dnf -y --nodocs install mssql-tools18 unixODBC-devel; \
-  dnf clean all; \
-  rm -rf /opt/mssql-tools && ln -s /opt/mssql-tools18 /opt/mssql-tools;
-
 USER "${USER}"
 
 ENTRYPOINT ["/opt/mssql/bin/permissions_check.sh", "/opt/docker-entrypoint.sh"]
