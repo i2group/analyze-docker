@@ -155,7 +155,19 @@ function download_textchart_manager() {
   if [[ -d "${build_folder}/rsm" ]]; then
     rm -rf "${build_folder}/rsm"
   fi
-  mkdir -p "${build_folder}/rsm/oconnect" "${build_folder}/rsm/iconnect" "${build_folder}/rsm/styles/_default"
+  if [[ -f "${build_folder}/shared/LxBundle.zip" ]]; then
+    rm -f "${build_folder}/shared/LxBundle.zip"
+  fi
+  if [[ -f "${build_folder}/shared/GxBundle.tbz2" ]]; then
+    rm -f "${build_folder}/shared/GxBundle.tbz2"
+  fi
+  mkdir -p "${build_folder}/rsm/oconnect" "${build_folder}/rsm/iconnect"
+
+  # TODO: Are this versions correct or do they need to come from a different file? E.g. pom.xml
+  pushd "${build_folder}/shared"
+    get_rosoka_package "LxBundle" "7.5.2.2" "zip"
+    get_rosoka_package "GxBundle" "7.3.0.0" "tbz2"
+  popd
   pushd "${build_folder}/rsm"
     get_rosoka_package "RosokaServerManager"
     pushd "oconnect"
@@ -167,11 +179,6 @@ function download_textchart_manager() {
       for jar_name in "${iconnect_jars[@]}"; do
         get_rosoka_package "$jar_name"
       done
-    popd
-    pushd "styles/_default"
-      # TODO: Are this versions correct or do they need to come from a different file? E.g. pom.xml
-      get_rosoka_package "LxBundle" "7.5.2.2" "zip"
-      get_rosoka_package "GxBundle" "7.3.0.0" "tbz2"
     popd
   popd
 }
@@ -187,6 +194,7 @@ function download_textchart_data_access() {
   mkdir -p "${build_folder}/rsm"
   pushd "${build_folder}/rsm"
     get_rosoka_package "RosokaDataAccessServer"
+    get_rosoka_package "RosokaDataAccessDaemon" "7.4.3.1"
   popd
 }
 

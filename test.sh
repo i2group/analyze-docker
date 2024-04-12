@@ -157,12 +157,18 @@ function main() {
   "i2group/i2eng-analyze-containers-base"*)
     test_image "${IMAGE}" "openssl version; \
     tar --help; \
-    gosu nobody true;"
+    gosu nobody true; \
+    jq --version;"
     ;;
   "i2group/i2eng-textchart-"*)
-    docker_args=("-e" "LICENSE=dev" "-e" "ADMIN_USER=admin" "-e" "ADMIN_PASSWORD=12345")
-    test_image "${IMAGE}" "java -version; \
-    gosu nobody true;" docker_args
+    docker_args=("-e" "LICENSE=dev" 
+    "-e" "ADMIN_USER=admin" 
+    "-e" "ADMIN_PASSWORD=12345" 
+    "-e" "USER_ID=$(id -u)" 
+    "-e" "GROUP_ID=$(id -g)"
+    "-e" "DB_DIALECT=sqlserver"
+    )
+    test_image "${IMAGE}" "java -version;" docker_args
     ;;
   "i2group/i2eng-analyze-containers-connectors-base"*)
     test_image "${IMAGE}" "openssl version; \

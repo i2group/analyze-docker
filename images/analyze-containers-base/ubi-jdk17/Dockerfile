@@ -29,6 +29,8 @@ USER root
 RUN set -eux; \
   microdnf -y update; \
   microdnf -y install \
+  jq \
+  iputils \
   shadow-utils \
   findutils \
   tar \
