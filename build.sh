@@ -198,6 +198,20 @@ function download_textchart_data_access() {
   popd
 }
 
+function download_connector_designer() {
+  local build_folder="$1"
+
+  if [[ -d "${build_folder}/app" ]]; then
+    rm -rf "${build_folder}/app"
+  fi
+  mkdir -p "${build_folder}/app"
+  pushd "${build_folder}"
+    gh release download "${VERSION}" --repo i2group-services/i2-connector-designer-backend --pattern 'i2-connector-designer-*.tgz' --clobber
+    # Untar the downloaded file and change the directory name to match i2-connector-designer
+    tar -xzf i2-connector-designer-*.tgz -C "app" --strip-components=1
+  popd
+}
+
 function prepare_build_context() {
   local env_file_path="utils/environment.sh"
   local build_folder="images/${IMAGE_NAME}/${VERSION}"
@@ -223,6 +237,9 @@ function prepare_build_context() {
   fi
   if [[ "${IMAGE_NAME}" == "textchart-data-access" ]]; then
     download_textchart_data_access "${build_folder}"
+  fi
+  if [[ "${IMAGE_NAME}" == "connector-designer" ]]; then
+    download_connector_designer "${build_folder}"
   fi
 }
 
