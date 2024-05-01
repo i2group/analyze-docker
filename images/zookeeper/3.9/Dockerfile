@@ -106,6 +106,7 @@ ENV PATH=$PATH:/$DISTRO_NAME/bin \
     ZOOCFGDIR=$ZOO_CONF_DIR
 
 COPY docker-entrypoint.sh /
+COPY --chown=zookeeper:zookeeper update-zk-password.sh /opt
 COPY --chown=zookeeper:zookeeper environment.sh /
 
 USER zookeeper
