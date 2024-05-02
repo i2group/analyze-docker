@@ -2,20 +2,21 @@
 
 Used for the config dev environment as part of the [analyze-containers](https://github.com/i2group/analyze-containers) project.
 
-* **Maintained by:**  
+- **Maintained by:**  
   [i2 Group](https://i2group.com/)
 
-* **Where to get help:**  
-  [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
+- **Where to get help:**  
+  - [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
+  - [i2 Group Support statement](https://support.i2group.com/s/article/2291)
 
-* **Using this image:**  
+- **Using this image:**  
   [Getting started](https://i2group.github.io/analyze-containers/content/getting_started.html)
 
 Contains base layers for connectors images built by Analyze Containers.
 
 ## Supported tags
 
-* [`18`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-connectors-base-minimal/18/Dockerfile)
+- [`18`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-connectors-base-minimal/18/Dockerfile)
 
 ## License
 

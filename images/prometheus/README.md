@@ -6,7 +6,8 @@ Used for Prometheus in a deployment of i2 Analyze.
   [i2 Group](https://i2group.com/)
 
 * **Where to get help:**  
-  [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
+  - [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
+  - [i2 Group Support statement](https://support.i2group.com/s/article/2291)
 
 * **Using this image:**  
   [Prometheus](https://i2group.github.io/analyze-containers/content/images-and-containers/prometheus.html)

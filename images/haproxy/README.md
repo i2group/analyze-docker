@@ -2,17 +2,18 @@
 
 Used for HA Proxy in a deployment of i2 Analyze.
 
-* **Maintained by:**  
+- **Maintained by:**  
   [i2 Group](https://i2group.com/)
 
-* **Where to get help:**  
-  [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
+- **Where to get help:**  
+  - [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
+  - [i2 Group Support statement](https://support.i2group.com/s/article/2291)
 
 The image is based on the [haproxy](https://hub.docker.com/_/haproxy) Docker image.
 
 ## Supported tags
 
-* [`2.9`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/haproxy/2.9/Dockerfile)
+- [`2.9`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/haproxy/2.9/Dockerfile)
 
 ## License
 

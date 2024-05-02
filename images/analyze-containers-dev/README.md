@@ -2,22 +2,23 @@
 
 Used for the config dev container as part of the [analyze-containers](https://github.com/i2group/analyze-containers) project.
 
-* **Maintained by:**  
+- **Maintained by:**  
   [i2 Group](https://i2group.com/)
 
-* **Where to get help:**  
-  [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
+- **Where to get help:**  
+  - [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
+  - [i2 Group Support statement](https://support.i2group.com/s/article/2291)
 
-* **Using this image:**  
+- **Using this image:**  
   [Getting started](https://i2group.github.io/analyze-containers/content/getting_started.html)
 
 The image is inspired by the [Microsoft Debian vscode-dev-container](https://github.com/microsoft/vscode-dev-containers/blob/main/containers/debian/.devcontainer/base.Dockerfile) base.Dockerfile.
 
 ## Supported tags
 
-* [`1`, `1.2`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-dev/1.2/.devcontainer/Dockerfile)
-* [`1.1`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-dev/1.1/.devcontainer/Dockerfile)
-* `1.0 [deprecated]`
+- [`1`, `1.2`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-dev/1.2/.devcontainer/Dockerfile)
+- [`1.1`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-dev/1.1/.devcontainer/Dockerfile)
+- `1.0 [deprecated]`
 
 ## License
 

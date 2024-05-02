@@ -2,13 +2,14 @@
 
 Used for Liberty in a deployment of i2 Analyze.
 
-* **Maintained by:**  
+- **Maintained by:**  
   [i2 Group](https://i2group.com/)
 
-* **Where to get help:**  
-  [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
+- **Where to get help:**  
+  - [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
+  - [i2 Group Support statement](https://support.i2group.com/s/article/2291)
 
-* **Using this image:**  
+- **Using this image:**  
   [Liberty](https://i2group.github.io/analyze-containers/content/images-and-containers/liberty.html)
 
 The image is inspired by the [openliberty/open-liberty](https://hub.docker.com/r/openliberty/open-liberty) Docker image.
@@ -17,9 +18,9 @@ The image with the `22` tag is inspired by the [ibmcom/websphere-liberty](https:
 
 ## Supported tags
 
-* [`ubi-jdk17`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/liberty/ubi-jdk17/Dockerfile)
-* [`ubi`](https://github.com/i2group/analyze-docker/blob/main/images/liberty/ubi/Dockerfile)
-* `22 [deprecated]`
+- [`ubi-jdk17`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/liberty/ubi-jdk17/Dockerfile)
+- [`ubi`](https://github.com/i2group/analyze-docker/blob/main/images/liberty/ubi/Dockerfile)
+- `22 [deprecated]`
 
 ## License
 
