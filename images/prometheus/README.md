@@ -9,7 +9,7 @@ Used for Prometheus in a deployment of i2 Analyze.
   [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
 
 * **Using this image:**  
-  [Prometheus](https://i2group.github.io/analyze-containers/content/images%20and%20containers/prometheus.html)
+  [Prometheus](https://i2group.github.io/analyze-containers/content/images-and-containers/prometheus.html)
 
 The image is inspired by the [prom/prometheus](https://hub.docker.com/r/prom/prometheus/) Docker image.
 

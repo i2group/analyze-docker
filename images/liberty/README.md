@@ -9,7 +9,7 @@ Used for Liberty in a deployment of i2 Analyze.
   [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
 
 * **Using this image:**  
-  [Liberty](https://i2group.github.io/analyze-containers/content/images%20and%20containers/liberty.html)
+  [Liberty](https://i2group.github.io/analyze-containers/content/images-and-containers/liberty.html)
 
 The image is inspired by the [openliberty/open-liberty](https://hub.docker.com/r/openliberty/open-liberty) Docker image.
 

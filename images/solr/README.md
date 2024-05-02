@@ -9,7 +9,7 @@ Used for Solr in a deployment of i2 Analyze.
   [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
 
 - **Using this image:**  
-  [Solr](https://i2group.github.io/analyze-containers/content/images%20and%20containers/solr.html)
+  [Solr](https://i2group.github.io/analyze-containers/content/images-and-containers/solr.html)
 
 The image is inspired by the official [solr](https://hub.docker.com/_/solr) Docker image.
 

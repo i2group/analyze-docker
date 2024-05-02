@@ -9,7 +9,7 @@ Used for Grafana in a deployment of i2 Analyze.
   [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
 
 * **Using this image:**  
-  [Grafana](https://i2group.github.io/analyze-containers/content/images%20and%20containers/grafana.html)
+  [Grafana](https://i2group.github.io/analyze-containers/content/images-and-containers/grafana.html)
 
 The image extends the official [grafana](https://hub.docker.com/r/grafana/grafana) image.
 

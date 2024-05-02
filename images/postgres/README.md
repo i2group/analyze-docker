@@ -9,7 +9,7 @@ Used for Postgres in a deployment of i2 Analyze.
   [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
 
 * **Using this image:**  
-  [Postgres](https://i2group.github.io/analyze-containers/content/images%20and%20containers/postgres_server.html)
+  [Postgres](https://i2group.github.io/analyze-containers/content/images-and-containers/postgres_server.html)
 
 The image is inspired by the official [postgres](https://hub.docker.com/_/postgres) and [postgis](https://github.com/postgis/docker-postgis) Docker images.
 

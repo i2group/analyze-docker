@@ -9,7 +9,7 @@ Used for ZooKeeper in a deployment of i2 Analyze.
   [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
 
 * **Using this image:**  
-  [ZooKeeper](https://i2group.github.io/analyze-containers/content/images%20and%20containers/zookeeper.html)
+  [ZooKeeper](https://i2group.github.io/analyze-containers/content/images-and-containers/zookeeper.html)
 
 The image is inspired by the official [zookeeper](https://hub.docker.com/_/zookeeper/) Docker image.
 
