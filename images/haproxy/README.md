@@ -9,6 +9,9 @@ Used for HA Proxy in a deployment of i2 Analyze.
   - [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
   - [i2 Group Support statement](https://support.i2group.com/s/article/2291)
 
+- **Using this image:**  
+  [HA Proxy](https://i2group.github.io/analyze-containers/content/images-and-containers/load_balancer.html)
+
 The image is based on the [haproxy](https://hub.docker.com/_/haproxy) Docker image.
 
 ## Supported tags
