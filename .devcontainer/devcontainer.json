@@ -36,10 +36,16 @@
         "GitHub.vscode-pull-request-github",
         "ms-vscode-remote.remote-wsl",
         "dbaeumer.vscode-eslint",
-        "exiasr.hadolint"
+        "exiasr.hadolint",
+        "GitHub.copilot"
       ]
     }
-  }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=cached",
+  "workspaceFolder": "${localWorkspaceFolder}",
+  "mounts": [
+    "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind"
+  ]
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"

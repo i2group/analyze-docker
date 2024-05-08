@@ -6,6 +6,8 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 USAGE="""
 Usage:
   build.sh -i <image_name> -v <version> [-t <tag>] [-p] [-m]
@@ -108,12 +110,12 @@ function parse_arguments() {
 }
 
 function validate() {
-  if [[ ! -d "images/${IMAGE_NAME}" ]]; then
+  if [[ ! -d "${SCRIPT_DIR}/images/${IMAGE_NAME}" ]]; then
     echo "Unknown image: ${IMAGE_NAME}" >&2
     exit 1
   fi
 
-  if [[ ! -d "images/${IMAGE_NAME}/${VERSION}" ]]; then
+  if [[ ! -d "${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}" ]]; then
     echo "Unknown version: ${VERSION}" >&2
     exit 1
   fi
@@ -212,13 +214,30 @@ function download_connector_designer() {
   popd
 }
 
+function download_connector_package() {
+  local build_folder="$1"
+
+  # For now connectors only support one version given by the i2connectors.json file = major supported version
+  "${SCRIPT_DIR}/internal/scripts/package-shared-connectors/download-and-extract-connectors" -i "${IMAGE_NAME}"
+}
+
+function package_semver_util() {
+  local build_folder="$1"
+
+  pushd "${SCRIPT_DIR}/internal/scripts/package-shared-connectors/semver_util"
+    npm install
+    npm pack --pack-destination "${build_folder}"
+  popd
+}
+
 function prepare_build_context() {
-  local env_file_path="utils/environment.sh"
-  local build_folder="images/${IMAGE_NAME}/${VERSION}"
+  local env_file_path="${SCRIPT_DIR}/utils/environment.sh"
+  local build_folder="${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}"
   local env_context_path="${build_folder}/environment.sh"
 
   # analyze-containers-dev doesn't use the environment.sh util
   if [[ "${IMAGE_NAME}" == "analyze-containers-dev" ]]; then
+    package_semver_util "${build_folder}/.devcontainer"
     return
   fi
 
@@ -229,27 +248,32 @@ function prepare_build_context() {
 
   cp "${env_file_path}" "${env_context_path}"
 
-  if [[ "${IMAGE_NAME}" == "textchart-manager" ]]; then
-    download_textchart_manager "${build_folder}"
-  fi
-  if [[ "${IMAGE_NAME}" == "textchart-worker" ]]; then
-    download_textchart_worker "${build_folder}"
-  fi
-  if [[ "${IMAGE_NAME}" == "textchart-data-access" ]]; then
-    download_textchart_data_access "${build_folder}"
-  fi
-  if [[ "${IMAGE_NAME}" == "connector-designer" ]]; then
-    download_connector_designer "${build_folder}"
-  fi
+  case "${IMAGE_NAME}" in
+    "textchart-manager")
+      download_textchart_manager "${build_folder}"
+      ;;
+    "textchart-worker")
+      download_textchart_worker "${build_folder}"
+      ;;
+    "textchart-data-access")
+      download_textchart_data_access "${build_folder}"
+      ;;
+    "connector-designer")
+      download_connector_designer "${build_folder}"
+      ;;
+    "connector-"*)
+      download_connector_package "${build_folder}"
+      ;;
+  esac
 }
 
 function build_image() {
   local is_dev_container="false"
-  local build_folder="images/${IMAGE_NAME}/${VERSION}"
+  local build_folder="${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}"
   local full_image_name="${IMAGE_REPO}/${IMAGE_PREFIX}-${IMAGE_NAME}:${TAG}"
   local extra_args=()
 
-  [[ -d "images/${IMAGE_NAME}/${VERSION}/.devcontainer" ]] && is_dev_container="true"
+  [[ -d "${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}/.devcontainer" ]] && is_dev_container="true"
 
   # SQL Server & Db2 only supports amd64
   if [[ "${IMAGE_NAME}" == "sqlserver" || "${IMAGE_NAME}" == "db2" ]]; then

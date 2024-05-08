@@ -7,6 +7,8 @@
 ARG GRAFANA_VERSION=10.2.2
 FROM grafana/grafana-enterprise:"${GRAFANA_VERSION}"
 
+# Dynamic labels
+ARG revision
 ARG GRAFANA_VERSION=10.2.2
 
 LABEL name="Grafana" \
