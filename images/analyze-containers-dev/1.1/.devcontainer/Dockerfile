@@ -71,7 +71,9 @@ RUN /bin/bash /tmp/library-scripts/common-redhat.sh "${USERNAME}" "${USER_UID}" 
     check-jsonschema \
     s3cmd \
   && curl -fL https://install-cli.jfrog.io | sh \
-  && chmod 755 /usr/local/bin/jf
+  && chmod 755 /usr/local/bin/jf \
+  && mkdir -p "/home/${USERNAME}/.docker" \
+  && chown -R "${USERNAME}" "/home/${USERNAME}"
 
 # Save command bash history
 # hadolint ignore=SC2028
