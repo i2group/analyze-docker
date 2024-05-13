@@ -101,12 +101,12 @@ function main() {
   local latest_version latest_major_version
   parse_arguments "$@"
 
-  # All these commands will reuse the cache from the previously run build
   if [[ -n "${TAG:-""}" ]]; then
     # Push unique image name
-    ./build.sh -i "${IMAGE_NAME}" -v "${VERSION}" -t "${TAG}" -m -p
+    ./build.sh -i "${IMAGE_NAME}" -v "${VERSION}" -t "${TAG}" -m -p -n
   fi
   
+  # Following commands will reuse the cache from the previously run build
   # Push stable minor tag
   ./build.sh -i "${IMAGE_NAME}" -v "${VERSION}" -t "${VERSION}" -m -p
 

@@ -15,13 +15,6 @@ fi
 if [ -n "${GROUP_ID}" ] && [ "${GROUP_ID}" != "0" ]; then
   groupmod -og "${GROUP_ID}" "${USERNAME}" >/dev/null
   usermod -u "${USER_ID}" -g "${GROUP_ID}" "${USERNAME}" >/dev/null
-  chown -R "${USERNAME}" "${HOME}"
-  if [[ -n "${ANALYZE_AWS_SAAS_DEPLOYMENT_ROOT_DIR}" ]]; then
-    chown -R "${USER_ID}:${GROUP_ID}" "${ANALYZE_AWS_SAAS_DEPLOYMENT_ROOT_DIR}"
-  fi
-  if [[ -n "${ANALYZE_CONTAINERS_ROOT_DIR}" ]]; then
-    chown -R "${USER_ID}:${GROUP_ID}" "${ANALYZE_CONTAINERS_ROOT_DIR}"
-  fi
 fi
 
 /usr/local/share/docker-init.sh "$@"

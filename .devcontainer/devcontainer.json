@@ -31,6 +31,7 @@
         "timonwong.shellcheck",
         "eamodio.gitlens",
         "streetsidesoftware.code-spell-checker",
+        "foxundermoon.shell-format",
         "mhutchie.git-graph",
         "esbenp.prettier-vscode",
         "GitHub.vscode-pull-request-github",

@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 USAGE="""
 Usage:
-  build.sh -i <image_name> -v <version> [-t <tag>] [-p] [-m]
+  build.sh -i <image_name> -v <version> [-t <tag>] [-p] [-m] [-n]
   build.sh -h
 
 Options:
@@ -19,6 +19,7 @@ Options:
   -t <tag>                Optional tag to push. Defaults to '<version>'.
   -p                      Will push the images to the registry.
   -m                      Builds multi-arch images.
+  -n                      Build without cache
   -h                      Display the help.
 """
 
@@ -55,7 +56,8 @@ function help() {
 }
 
 function parse_arguments() {
-  while getopts ":i:v:t:pmh" flag; do
+  # cspell:ignore pmnh
+  while getopts ":i:v:t:pmnh" flag; do
     case "${flag}" in
     i)
       IMAGE_NAME="${OPTARG}"
@@ -71,6 +73,9 @@ function parse_arguments() {
       ;;
     m)
       MULTI_ARCH_FLAG="true"
+      ;;
+    n)
+      NO_CACHE="true"
       ;;
     h)
       help
@@ -102,6 +107,10 @@ function parse_arguments() {
 
   if [[ -z "${MULTI_ARCH_FLAG:-""}" ]]; then
     MULTI_ARCH_FLAG="false"
+  fi
+
+  if [[ -z "${NO_CACHE:-""}" ]]; then
+    NO_CACHE="false"
   fi
 
   IMAGE_REPO="i2group"
@@ -142,8 +151,8 @@ function download_textchart_worker() {
   fi
   mkdir -p "${build_folder}/rsm"
   pushd "${build_folder}/rsm"
-    get_rosoka_package "RosokaServerWorker"
-    get_rosoka_package "RosokaServerWorkerDaemon"
+  get_rosoka_package "RosokaServerWorker"
+  get_rosoka_package "RosokaServerWorkerDaemon"
   popd
 }
 
@@ -167,21 +176,21 @@ function download_textchart_manager() {
 
   # TODO: Are this versions correct or do they need to come from a different file? E.g. pom.xml
   pushd "${build_folder}/shared"
-    get_rosoka_package "LxBundle" "7.5.2.2" "zip"
-    get_rosoka_package "GxBundle" "7.3.0.0" "tbz2"
+  get_rosoka_package "LxBundle" "7.5.2.2" "zip"
+  get_rosoka_package "GxBundle" "7.3.0.0" "tbz2"
   popd
   pushd "${build_folder}/rsm"
-    get_rosoka_package "RosokaServerManager"
-    pushd "oconnect"
-      for jar_name in "${oconnect_jars[@]}"; do
-        get_rosoka_package "$jar_name"
-      done
-    popd
-    pushd "iconnect"
-      for jar_name in "${iconnect_jars[@]}"; do
-        get_rosoka_package "$jar_name"
-      done
-    popd
+  get_rosoka_package "RosokaServerManager"
+  pushd "oconnect"
+  for jar_name in "${oconnect_jars[@]}"; do
+    get_rosoka_package "$jar_name"
+  done
+  popd
+  pushd "iconnect"
+  for jar_name in "${iconnect_jars[@]}"; do
+    get_rosoka_package "$jar_name"
+  done
+  popd
   popd
 }
 
@@ -195,8 +204,8 @@ function download_textchart_data_access() {
   fi
   mkdir -p "${build_folder}/rsm"
   pushd "${build_folder}/rsm"
-    get_rosoka_package "RosokaDataAccessServer"
-    get_rosoka_package "RosokaDataAccessDaemon" "7.4.3.1"
+  get_rosoka_package "RosokaDataAccessServer"
+  get_rosoka_package "RosokaDataAccessDaemon" "7.4.3.1"
   popd
 }
 
@@ -208,9 +217,9 @@ function download_connector_designer() {
   fi
   mkdir -p "${build_folder}/app"
   pushd "${build_folder}"
-    gh release download "${VERSION}" --repo i2group-services/i2-connector-designer-backend --pattern 'i2-connector-designer-*.tgz' --clobber
-    # Untar the downloaded file and change the directory name to match i2-connector-designer
-    tar -xzf i2-connector-designer-*.tgz -C "app" --strip-components=1
+  gh release download "${VERSION}" --repo i2group-services/i2-connector-designer-backend --pattern 'i2-connector-designer-*.tgz' --clobber
+  # Untar the downloaded file and change the directory name to match i2-connector-designer
+  tar -xzf i2-connector-designer-*.tgz -C "app" --strip-components=1
   popd
 }
 
@@ -225,8 +234,8 @@ function package_semver_util() {
   local build_folder="$1"
 
   pushd "${SCRIPT_DIR}/internal/scripts/package-shared-connectors/semver_util"
-    npm install
-    npm pack --pack-destination "${build_folder}"
+  npm install
+  npm pack --pack-destination "${build_folder}"
   popd
 }
 
@@ -249,21 +258,21 @@ function prepare_build_context() {
   cp "${env_file_path}" "${env_context_path}"
 
   case "${IMAGE_NAME}" in
-    "textchart-manager")
-      download_textchart_manager "${build_folder}"
-      ;;
-    "textchart-worker")
-      download_textchart_worker "${build_folder}"
-      ;;
-    "textchart-data-access")
-      download_textchart_data_access "${build_folder}"
-      ;;
-    "connector-designer")
-      download_connector_designer "${build_folder}"
-      ;;
-    "connector-"*)
-      download_connector_package "${build_folder}"
-      ;;
+  "textchart-manager")
+    download_textchart_manager "${build_folder}"
+    ;;
+  "textchart-worker")
+    download_textchart_worker "${build_folder}"
+    ;;
+  "textchart-data-access")
+    download_textchart_data_access "${build_folder}"
+    ;;
+  "connector-designer")
+    download_connector_designer "${build_folder}"
+    ;;
+  "connector-"*)
+    download_connector_package "${build_folder}"
+    ;;
   esac
 }
 
@@ -287,28 +296,39 @@ function build_image() {
   if [[ "${PUSH_FLAG}" == "true" ]]; then
     extra_args+=("--push")
   fi
+  if [[ "${NO_CACHE}" == "true" ]]; then
+    extra_args+=("--no-cache")
+  fi
 
   print "Building ${IMAGE_NAME}"
 
-  # Create new "analyze-docker" builder instance. But first ensure to remove previous one if any
-  docker buildx ls | grep -q "analyze-docker" && docker buildx rm "analyze-docker"
-  docker buildx create --driver docker-container --use --name "analyze-docker"
+  BUILDER_NAME="analyze-docker"
+  if [[ -n "${CIRCLE_BUILD_NUM}" ]]; then
+    BUILDER_NAME="${BUILDER_NAME}-${CIRCLE_BUILD_NUM}"
+  fi
+
+  if docker buildx ls | grep -q "${BUILDER_NAME}"; then
+    echo "Using existing builder instance ${BUILDER_NAME}"
+    docker buildx use "${BUILDER_NAME}"
+  else
+    echo "Creating new builder instance ${BUILDER_NAME}"
+    docker buildx create --driver docker-container --use --name "${BUILDER_NAME}"
+  fi
 
   if [[ "${is_dev_container}" == "true" ]]; then
     # Use devcontainer CLI instead to build image. This uses buildx internally already.
     export DEV_CONTAINER_VERSION="${VERSION}"
-    devcontainer build --no-cache \
+    devcontainer build \
       "${extra_args[@]}" \
       --image-name "${full_image_name}" "${build_folder}"
   else
     docker buildx build \
       "${extra_args[@]}" \
-      --pull --no-cache \
+      --pull \
       --build-arg revision="${CIRCLE_BUILD_NUM:-dev}" \
       --build-arg version="${VERSION}" \
       --tag "${full_image_name}" "${build_folder}"
   fi
-  docker buildx rm "analyze-docker"
   echo "Success"
 }
 
