@@ -303,11 +303,15 @@ function build_image() {
   print "Building ${IMAGE_NAME}"
 
   BUILDER_NAME="analyze-docker"
-  if [[ -n "${CIRCLE_BUILD_NUM}" ]]; then
+  if [[ -n "${CIRCLE_BUILD_NUM:-}" ]]; then
     BUILDER_NAME="${BUILDER_NAME}-${CIRCLE_BUILD_NUM}"
   fi
 
-  if docker buildx ls | grep -q "${BUILDER_NAME}"; then
+  # TODO: remove
+  echo "DEBUG: issues with buildx"
+  docker buildx ls --format "{{.Name}}"
+
+  if docker buildx ls --format "{{.Name}}" | grep -q "^${BUILDER_NAME}$"; then
     echo "Using existing builder instance ${BUILDER_NAME}"
     docker buildx use "${BUILDER_NAME}"
   else
