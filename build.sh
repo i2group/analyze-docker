@@ -307,10 +307,6 @@ function build_image() {
     BUILDER_NAME="${BUILDER_NAME}-${CIRCLE_BUILD_NUM}"
   fi
 
-  # TODO: remove
-  echo "DEBUG: issues with buildx"
-  docker buildx ls --format "{{.Name}}"
-
   if docker buildx ls --format "{{.Name}}" | grep -q "^${BUILDER_NAME}$"; then
     echo "Using existing builder instance ${BUILDER_NAME}"
     docker buildx use "${BUILDER_NAME}"
