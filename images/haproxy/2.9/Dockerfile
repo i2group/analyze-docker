@@ -33,6 +33,7 @@ RUN groupmod --gid $USER_GID $USER \
 RUN apt-get update \
   && apt-get -y --no-install-recommends install \
   sudo \
+  net-tools \
   && rm -rf /var/lib/apt/lists/*
 
 # Add sudo
