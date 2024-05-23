@@ -12,7 +12,7 @@ ARG revision \
   version
 
 # [Option] Upgrade OS packages to their latest versions
-ARG UPGRADE_PACKAGES="false"
+ARG UPGRADE_PACKAGES="true"
 # [Option] Enable non-root Docker access in container
 ARG ENABLE_NONROOT_DOCKER="true"
 
@@ -45,12 +45,12 @@ COPY semver_util.sh /usr/bin/semver_util.sh
 COPY library-scripts/*.sh /tmp/library-scripts/
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN /bin/bash /tmp/library-scripts/common-redhat.sh "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" \
+RUN microdnf update -y \
+  && /bin/bash /tmp/library-scripts/common-redhat.sh "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" \
   # Use Docker script from script library to set things up
   && /bin/bash /tmp/library-scripts/docker-redhat.sh "${ENABLE_NONROOT_DOCKER}" "/var/run/docker-host.sock" "/var/run/docker.sock" "${USERNAME}" \
   # Install additional OS packages.
   # jq and curl already installed by common-redhat
-  && microdnf update \
   && dnf config-manager --nogpgcheck --add-repo https://cli.github.com/packages/rpm/gh-cli.repo \
   && ARCH=`uname -m` \
   # Epel 8 and 9 doesn't have the xmlstarlet package

@@ -14,6 +14,7 @@ ENV PROMETHEUS="https://api.github.com/repos/prometheus/prometheus/releases/${PR
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN set -ex; \
+  microdnf -y update; \
   microdnf -y install gzip jq tar; \
   microdnf clean all
 
@@ -51,6 +52,7 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 RUN set -eux; \
+  dnf -y update; \
   dnf -y install \
   ca-certificates \
   httpd-tools \
