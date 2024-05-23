@@ -40,6 +40,7 @@ ENV JAVA_HOME="/opt/java/openjdk" \
   DEVCONTAINER="true"
 
 COPY initShell.sh /usr/bin/initShell.sh
+COPY semver_util.sh /usr/bin/semver_util.sh
 
 COPY library-scripts/*.sh /tmp/library-scripts/
 
@@ -85,8 +86,7 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
   && echo 'export INPUTRC=~/.inputrc' >> "/home/${USERNAME}/.bashrc" \
   && echo '"\e[B": history-search-forward' >> "/home/${USERNAME}/.inputrc" \
   && echo '"\e[A": history-search-backward' >> "/home/${USERNAME}/.inputrc" \
-  && echo '. /usr/bin/initShell.sh -y' >> "/home/${USERNAME}/.bashrc" \
-  && echo 'alias semver_util="npm_config_loglevel=error npx -y -q --package /opt/semver_util.tgz semver_util 2>/dev/null"' >> "/home/${USERNAME}/.bashrc"
+  && echo '. /usr/bin/initShell.sh -y' >> "/home/${USERNAME}/.bashrc"
 
 COPY --chmod=755 semver_util-*.tgz /opt/semver_util.tgz
 COPY docker-entrypoint.sh /opt/docker-entrypoint.sh

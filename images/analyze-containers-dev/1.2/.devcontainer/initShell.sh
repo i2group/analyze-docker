@@ -93,3 +93,5 @@ fi
 
 determineRootDir
 addExecutablesToPath
+
+source semver_util.sh
