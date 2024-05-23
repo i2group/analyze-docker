@@ -6,7 +6,7 @@
 #
 # Inspired by: https://github.com/prometheus/prometheus
 # hadolint ignore=DL3049
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.1.0 as builder
+FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 ARG PROMETHEUS_VERSION="v2.40.3"
 
 ENV PROMETHEUS_TAG="tags/${PROMETHEUS_VERSION}"
@@ -31,7 +31,7 @@ RUN ARCH=$(uname -m) \
   && sha256sum --check --ignore-missing "${SUM_FILE}" \
   && tar --extract --gunzip --no-same-owner --strip-components=1 --directory /prometheus --file ./*.tar.gz
 
-FROM registry.access.redhat.com/ubi9/ubi:9.1.0
+FROM registry.access.redhat.com/ubi9/ubi
 
 # Dynamic labels
 ARG revision

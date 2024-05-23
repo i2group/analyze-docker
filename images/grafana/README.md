@@ -5,7 +5,8 @@ Used for Grafana in a deployment of i2 Analyze.
 - **Maintained by:**  
   [i2 Group](https://i2group.com/)
 
-- **Where to get help:**  
+- **Where to get help:**
+
   - [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
   - [i2 Group Support statement](https://support.i2group.com/s/article/2291)
 
@@ -16,7 +17,8 @@ The image extends the official [grafana](https://hub.docker.com/r/grafana/grafan
 
 ## Supported tags
 
-- [`10`, `10.2`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/grafana/10.2/Dockerfile)
+- [`11`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/grafana/11/Dockerfile)
+- [`10`, `10.2`](https://github.com/i2group/analyze-docker/blob/main/images/grafana/10.2/Dockerfile)
 - [`10.0`](https://github.com/i2group/analyze-docker/blob/main/images/grafana/10.0/Dockerfile)
 
 ## License
