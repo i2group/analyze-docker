@@ -57,16 +57,25 @@ RUN microdnf update -y \
   && yumdownloader --resolve "http://mirror.stream.centos.org/9-stream/AppStream/${ARCH}/os/Packages/xmlstarlet-1.6.1-20.el9.${ARCH}.rpm" \
   && rpm -ivh *.rpm \
   && rm *.rpm \
+  && microdnf -y remove /usr/bin/python \
+  && dnf -y module enable nodejs:20 \
   # Install deps
-  && microdnf -y install \
+  && microdnf -y install --setopt=install_weak_deps=0 \
   maven \
   diffutils \
   bc \
   gh \
-  python3-pip \
+  python3.12 \
+  python3.12-pip \
+  nodejs \
   npm \
   # Clean up
   && microdnf clean all \
+  # Ensure symlinks are created for the correct version of Python
+  && ln -sf /usr/bin/python3.12 /usr/bin/python3 \
+  && ln -sf /usr/bin/python3.12 /usr/bin/python \
+  && ln -sf /usr/bin/pip3.12 /usr/bin/pip3 \
+  && ln -sf /usr/bin/pip3.12 /usr/bin/pip \
   # Other dependencies
   && pip3 install --no-cache-dir \
     check-jsonschema \

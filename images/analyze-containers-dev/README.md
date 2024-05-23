@@ -5,7 +5,8 @@ Used for the config dev container as part of the [analyze-containers](https://gi
 - **Maintained by:**  
   [i2 Group](https://i2group.com/)
 
-- **Where to get help:**  
+- **Where to get help:**
+
   - [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
   - [i2 Group Support statement](https://support.i2group.com/s/article/2291)
 
@@ -17,7 +18,7 @@ The image is inspired by the [Microsoft Debian vscode-dev-container](https://git
 ## Supported tags
 
 - [`1`, `1.2`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-dev/1.2/.devcontainer/Dockerfile)
-- [`1.1`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-dev/1.1/.devcontainer/Dockerfile)
+- `1.1 [deprecated]`
 - `1.0 [deprecated]`
 
 ## License
