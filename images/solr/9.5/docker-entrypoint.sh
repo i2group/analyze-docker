@@ -12,26 +12,8 @@ if [[ "${DEBUG}" == "true" ]]; then
 fi
 
 # Secrets injection
+# shellcheck disable=SC1091
 . environment.sh
-
-# Runs a command, suppressing all output UNLESS the command fails
-# If the command fails, it'll be reported to stderr.
-# $@ = the command to run, including all arguments.
-# On success, returns 0 and outputs nothing.
-# On failure, returns the command's exit code and outputs to stderr.
-function run_quietly() {
-  local output exit_code
-  if output=$( "$@" 2>&1 ); then
-    return 0
-  else
-    exit_code="$?"
-  fi
-  echo "ERROR: $* failed, exit code ${exit_code}" >&2
-  if [[ -n "${output}" ]]; then
-    echo "${output}" >&2
-  fi
-  return "${exit_code}"
-}
 
 if [[ "${SERVER_SSL}" == "true" || "${SOLR_ZOO_SSL_CONNECTION}" == "true" ]]; then
   file_env 'SSL_PRIVATE_KEY'
@@ -60,10 +42,10 @@ if [[ "${SERVER_SSL}" == "true" || "${SOLR_ZOO_SSL_CONNECTION}" == "true" ]]; th
   echo "${SSL_CA_CERTIFICATE}" >"${CA_CER}"
 
   run_quietly openssl pkcs12 -export -in "${CER}" -inkey "${KEY}" -certfile "${CA_CER}" -passout env:KEYSTORE_PASS -out "${KEYSTORE}"
-  
+
   OUTPUT=$(keytool -importcert -noprompt -alias ca -keystore "${TRUSTSTORE}" -file ${CA_CER} -storepass:env KEYSTORE_PASS -storetype PKCS12 2>&1)
-  
-  # Need to check that it was added since -noprompt could skip the certificate but the output could 
+
+  # Need to check that it was added since -noprompt could skip the certificate but the output could
   # have warning information
   if [[ "${OUTPUT}" != *"Certificate was added to keystore"* ]]; then
     echo "$OUTPUT"

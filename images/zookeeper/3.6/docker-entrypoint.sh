@@ -11,26 +11,8 @@ if [[ "${DEBUG}" == "true" ]]; then
   set -x
 fi
 
+# shellcheck disable=SC1091
 . /environment.sh
-
-# Runs a command, suppressing all output UNLESS the command fails
-# If the command fails, it'll be reported to stderr.
-# $@ = the command to run, including all arguments.
-# On success, returns 0 and outputs nothing.
-# On failure, returns the command's exit code and outputs to stderr.
-function run_quietly() {
-  local output exit_code
-  if output=$( "$@" 2>&1 ); then
-    return 0
-  else
-    exit_code="$?"
-  fi
-  echo "ERROR: $* failed, exit code ${exit_code}" >&2
-  if [[ -n "${output}" ]]; then
-    echo "${output}" >&2
-  fi
-  return "${exit_code}"
-}
 
 TMP_SECRETS="/tmp/i2acerts"
 KEY="${TMP_SECRETS}/server.key"

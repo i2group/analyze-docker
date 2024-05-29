@@ -241,8 +241,10 @@ function package_semver_util() {
 
 function prepare_build_context() {
   local env_file_path="${SCRIPT_DIR}/utils/environment.sh"
+  local cert_tools_file_path="${SCRIPT_DIR}/utils/cert_tools.sh"
   local build_folder="${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}"
   local env_context_path="${build_folder}/environment.sh"
+  local cert_tools_context_path="${build_folder}/cert_tools.sh"
 
   # analyze-containers-dev doesn't use the environment.sh util
   if [[ "${IMAGE_NAME}" == "analyze-containers-dev" ]]; then
@@ -253,9 +255,11 @@ function prepare_build_context() {
   # Solr 8.11 version had a special path
   if [[ "${IMAGE_NAME}" == "solr" && "${VERSION}" == "8.11"* ]]; then
     env_context_path="${build_folder}/scripts/environment.sh"
+    cert_tools_context_path="${build_folder}/scripts/cert_tools.sh"
   fi
 
   cp "${env_file_path}" "${env_context_path}"
+  cp "${cert_tools_file_path}" "${cert_tools_context_path}"
 
   case "${IMAGE_NAME}" in
   "textchart-manager")

@@ -25,6 +25,7 @@ LABEL maintainer="i2 Group" \
 
 COPY --chown=1001:0 docker-entrypoint.sh /opt/docker-entrypoint.sh
 COPY --chown=1001:0 environment.sh /opt/environment.sh
+COPY --chown=1001:0 cert_tools.sh /opt/cert_tools.sh
 
 USER root
 
