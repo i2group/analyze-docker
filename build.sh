@@ -135,6 +135,12 @@ function get_rosoka_package() {
   local package_version="${2:-"${VERSION}"}"
   local package_extension="${3:-"jar"}"
 
+  if [[ "${NO_CACHE}" == "true" ]]; then
+    rm -f "${package_name}.${package_extension}"
+  elif [[ -f "${package_name}.${package_extension}" ]]; then
+    return
+  fi
+
   if [[ -z "${NEXUS_TOKEN}" ]]; then
     print_error_and_exit "Please provide authentication for Nexus. Variable NEXUS_TOKEN is missing."
   fi
@@ -163,15 +169,6 @@ function download_textchart_manager() {
 
   local jar_name
 
-  if [[ -d "${build_folder}/rsm" ]]; then
-    rm -rf "${build_folder}/rsm"
-  fi
-  if [[ -f "${build_folder}/shared/LxBundle.zip" ]]; then
-    rm -f "${build_folder}/shared/LxBundle.zip"
-  fi
-  if [[ -f "${build_folder}/shared/GxBundle.tbz2" ]]; then
-    rm -f "${build_folder}/shared/GxBundle.tbz2"
-  fi
   mkdir -p "${build_folder}/rsm/oconnect" "${build_folder}/rsm/iconnect"
 
   # TODO: Are this versions correct or do they need to come from a different file? E.g. pom.xml
@@ -199,9 +196,6 @@ function download_textchart_data_access() {
 
   local jar_name
 
-  if [[ -d "${build_folder}/rsm" ]]; then
-    rm -rf "${build_folder}/rsm"
-  fi
   mkdir -p "${build_folder}/rsm"
   pushd "${build_folder}/rsm"
   get_rosoka_package "RosokaDataAccessServer"
@@ -212,14 +206,20 @@ function download_textchart_data_access() {
 function download_connector_designer() {
   local build_folder="$1"
 
-  if [[ -d "${build_folder}/app" ]]; then
-    rm -rf "${build_folder}/app"
+  if [[ "${NO_CACHE}" == "true" ]]; then
+    if [[ -d "${build_folder}/app" ]]; then
+      rm -rf "${build_folder}/app"
+    fi
+  elif [[ -f "${build_folder}/app/package.json" ]]; then
+    return
   fi
+
   mkdir -p "${build_folder}/app"
   pushd "${build_folder}"
   gh release download "${VERSION}" --repo i2group-services/i2-connector-designer-backend --pattern 'i2-connector-designer-*.tgz' --clobber
   # Untar the downloaded file and change the directory name to match i2-connector-designer
   tar -xzf i2-connector-designer-*.tgz -C "app" --strip-components=1
+  rm -f i2-connector-designer-*.tgz
   popd
 }
 
@@ -232,6 +232,14 @@ function download_connector_package() {
 
 function package_semver_util() {
   local build_folder="$1"
+
+  if [[ "${NO_CACHE}" == "true" ]]; then
+    if ls "${build_folder}/semver_util-"*.tgz 1>/dev/null 2>&1; then
+      rm -f "${build_folder}/semver_util-"*.tgz
+    fi
+  elif ls "${build_folder}/semver_util-"*.tgz 1>/dev/null 2>&1; then
+    return
+  fi
 
   pushd "${SCRIPT_DIR}/internal/scripts/package-shared-connectors/semver_util"
   npm install
