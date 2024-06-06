@@ -7,7 +7,7 @@ Used for the config dev environment as part of the [analyze-containers](https://
 
 - **Where to get help:**  
   - [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
-  - [i2 Group Support statement](https://support.i2group.com/s/article/2291)
+  - [i2 Group Support statement](https://support.i2group.com/s/support-statement)
 
 - **Using this image:**  
   [Getting started](https://i2group.github.io/analyze-containers/content/getting_started.html)

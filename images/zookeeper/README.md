@@ -7,7 +7,7 @@ Used for ZooKeeper in a deployment of i2 Analyze.
 
 - **Where to get help:**  
   - [Raise an issue](https://github.com/i2group/analyze-docker/issues?q=is%3Aissue+is%3Aopen)
-  - [i2 Group Support statement](https://support.i2group.com/s/article/2291)
+  - [i2 Group Support statement](https://support.i2group.com/s/support-statement)
 
 - **Using this image:**  
   [ZooKeeper](https://i2group.github.io/analyze-containers/content/images-and-containers/zookeeper.html)
