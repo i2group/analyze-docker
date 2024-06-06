@@ -25,10 +25,7 @@ else
   cp /etc/prometheus-templates/prometheus.yml /etc/prometheus/prometheus.yml
 fi
 
-# Passwords have to be hashed with bcrypt for prometheus
-encoded_pass=$(echo "${PROMETHEUS_PASSWORD}" | htpasswd -niBC 10 "" | tr -d ':\n')
-escaped_encoded_pass=$(printf '%s\n' "$encoded_pass" | sed -e 's/[\/&]/\\&/g')
-export PROMETHEUS_PASSWORD="${escaped_encoded_pass}"
+NON_ENCRYPTED_PASSWORD="${PROMETHEUS_PASSWORD}"
 
 # Substitute environment variables
 envsubst < /etc/prometheus/prometheus.yml > /etc/prometheus/prometheus.yml.tmp
@@ -36,8 +33,14 @@ envsubst < /etc/prometheus/prometheus.yml > /etc/prometheus/prometheus.yml.tmp
 # Replace original file with the new one
 mv /etc/prometheus/prometheus.yml.tmp /etc/prometheus/prometheus.yml
 
+# Passwords have to be hashed with bcrypt for web-config.yml
+encoded_pass=$(echo "${NON_ENCRYPTED_PASSWORD}" | htpasswd -niBC 10 "" | tr -d ':\n')
+export PROMETHEUS_PASSWORD="${encoded_pass}"
+
 # Substitute environment variables
 envsubst < /etc/prometheus/web-config.yml > /etc/prometheus/web-config.yml.tmp
 
 # Replace original file with the new one
 mv /etc/prometheus/web-config.yml.tmp /etc/prometheus/web-config.yml
+
+export PROMETHEUS_PASSWORD="${NON_ENCRYPTED_PASSWORD}"
