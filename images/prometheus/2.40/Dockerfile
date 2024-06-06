@@ -55,6 +55,7 @@ RUN set -eux; \
   dnf -y update; \
   dnf -y install \
   ca-certificates \
+  gettext \
   httpd-tools \
   && dnf clean all
 

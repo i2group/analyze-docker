@@ -140,7 +140,8 @@ function main() {
     ;;
   "i2group/i2eng-prometheus"*)
     docker_args=("-e" "PROMETHEUS_USERNAME=prom" "-e" "PROMETHEUS_PASSWORD=prom" "--entrypoint=")
-    test_image "${IMAGE}" "prometheus -h;" docker_args
+    test_image "${IMAGE}" "prometheus -h; \
+    envsubst --version;" docker_args
     ;;
   "i2group/i2eng-grafana"*)
     docker_args=("--entrypoint=")

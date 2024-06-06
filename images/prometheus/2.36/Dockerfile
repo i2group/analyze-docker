@@ -50,6 +50,7 @@ RUN set -eux; \
   yum -y update; \
   yum -y install \
   ca-certificates \
+  gettext \
   httpd-tools; \
   yum clean all; \
   rm -rf /var/cache/yum
