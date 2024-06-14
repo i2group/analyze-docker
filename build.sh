@@ -216,7 +216,7 @@ function download_connector_designer() {
 
   mkdir -p "${build_folder}/app"
   pushd "${build_folder}"
-  gh release download "${VERSION}" --repo i2group-services/i2-connector-designer-backend --pattern 'i2-connector-designer-*.tgz' --clobber
+  gh release download "v${VERSION}" --repo i2group/connector-designer --pattern 'i2-connector-designer-*.tgz' --clobber
   # Untar the downloaded file and change the directory name to match i2-connector-designer
   tar -xzf i2-connector-designer-*.tgz -C "app" --strip-components=1
   rm -f i2-connector-designer-*.tgz
