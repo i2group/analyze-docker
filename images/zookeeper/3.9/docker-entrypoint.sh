@@ -20,6 +20,7 @@ CER="${TMP_SECRETS}/server.cer"
 CA_CER="${TMP_SECRETS}/CA.cer"
 KEYSTORE="${TMP_SECRETS}/keystore.p12"
 TRUSTSTORE="${TMP_SECRETS}/truststore.p12"
+CONFIG="$ZOO_CONF_DIR/zoo.cfg"
 
 # If ssl is configured re/create new temporary certificate stores and passwords
 if [[ "${SERVER_SSL}" == "true" ]]; then
@@ -56,8 +57,7 @@ else
   fi
 fi
 # Generate the config only if it doesn't exist
-if [[ ! -f "$ZOO_CONF_DIR/zoo.cfg" ]]; then
-  CONFIG="$ZOO_CONF_DIR/zoo.cfg"
+if [[ ! -f "$CONFIG" ]]; then
   {
     echo "dataDir=$ZOO_DATA_DIR"
     echo "dataLogDir=$ZOO_DATA_LOG_DIR"
