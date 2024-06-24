@@ -203,26 +203,6 @@ function download_textchart_data_access() {
   popd
 }
 
-function download_connector_designer() {
-  local build_folder="$1"
-
-  if [[ "${NO_CACHE}" == "true" ]]; then
-    if [[ -d "${build_folder}/app" ]]; then
-      rm -rf "${build_folder}/app"
-    fi
-  elif [[ -f "${build_folder}/app/package.json" ]]; then
-    return
-  fi
-
-  mkdir -p "${build_folder}/app"
-  pushd "${build_folder}"
-  gh release download "v${VERSION}" --repo i2group/connector-designer --pattern 'i2-connector-designer-*.tgz' --clobber
-  # Untar the downloaded file and change the directory name to match i2-connector-designer
-  tar -xzf i2-connector-designer-*.tgz -C "app" --strip-components=1
-  rm -f i2-connector-designer-*.tgz
-  popd
-}
-
 function download_connector_package() {
   local build_folder="$1"
 
@@ -278,9 +258,6 @@ function prepare_build_context() {
     ;;
   "textchart-data-access")
     download_textchart_data_access "${build_folder}"
-    ;;
-  "connector-designer")
-    download_connector_designer "${build_folder}"
     ;;
   "connector-"*)
     download_connector_package "${build_folder}"
