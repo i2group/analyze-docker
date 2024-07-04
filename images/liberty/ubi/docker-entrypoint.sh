@@ -125,6 +125,26 @@ if [[ "${SERVER_SSL}" == "true" || "${SOLR_ZOO_SSL_CONNECTION}" == "true" ]]; th
   export LIBERTY_KEYSTORE_PASSWORD="${KEYSTORE_PASS}"
 fi
 
+file_env 'JWT_CERTIFICATE'
+file_env 'JWT_PRIVATE_KEY'
+
+if [[ -n "${JWT_CERTIFICATE}" || -n "${JWT_PRIVATE_KEY}" ]]; then
+  JWT_KEY="${TMP_SECRETS}/jwt_sign.key"
+  JWT_CER="${TMP_SECRETS}/jwt_sign.cer"
+  JWT_TRUSTSTORE="${TMP_SECRETS}/jwt_truststore.p12"
+  JWT_KEYSTORE="${TMP_SECRETS}/jwt_keystore.p12"
+  add_to_pem_file "${JWT_CER}" JWT_CERTIFICATE "${JWT_CERTIFICATE}"
+  add_to_pem_file "${JWT_KEY}" JWT_PRIVATE_KEY "${JWT_PRIVATE_KEY}"
+  run_quietly openssl pkcs12 -export -inkey "${JWT_KEY}" -in "${JWT_CER}" -passout env:KEYSTORE_PASS -out "${JWT_KEYSTORE}"
+  add_to_java_keystore "${JWT_TRUSTSTORE}" KEYSTORE_PASS \
+    JWT_CERTIFICATE "${JWT_CERTIFICATE}"
+
+  export JWT_KEYSTORE_LOCATION="${JWT_KEYSTORE}"
+  export JWT_KEYSTORE_PASSWORD="${KEYSTORE_PASS}"
+  export JWT_TRUSTSTORE_LOCATION="${JWT_TRUSTSTORE}"
+  export JWT_TRUSTSTORE_PASSWORD="${KEYSTORE_PASS}"
+fi
+
 if [[ "${SERVER_SSL}" == "true" ]]; then
   LIBERTY_SSL="true"
   HTTP_PORT="-1"

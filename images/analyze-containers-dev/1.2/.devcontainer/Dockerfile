@@ -59,6 +59,17 @@ RUN microdnf update -y \
   && rm *.rpm \
   && microdnf -y remove /usr/bin/python \
   && dnf -y module enable nodejs:20 \
+  && dnf -y install nodejs unzip \
+  && YQ_LATEST_VERSION=$(curl -s https://api.github.com/repos/mikefarah/yq/releases/latest |  jq -r '.tag_name') \
+  && wget https://github.com/mikefarah/yq/releases/download/${YQ_LATEST_VERSION}/yq_linux_amd64.tar.gz -O - | tar xz && mv yq_linux_amd64 /usr/bin/yq \
+  # Install AWS CLI
+  && curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "awscliv2.zip" \
+  && unzip awscliv2.zip \
+  && ./aws/install \
+  # Install session manager plugin
+  && if [[ "${ARCH}" == "aarch64" ]]; then RPM_NAME="linux_arm64"; else RPM_NAME="linux_64bit"; fi \
+  && curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/${RPM_NAME}/session-manager-plugin.rpm" -o "session-manager-plugin.rpm" \
+  && dnf install -y session-manager-plugin.rpm \
   # Install deps
   && microdnf -y install --setopt=install_weak_deps=0 \
   maven \
@@ -69,6 +80,7 @@ RUN microdnf update -y \
   python3.12-pip \
   nodejs \
   npm \
+  
   # Clean up
   && microdnf clean all \
   # Ensure symlinks are created for the correct version of Python
