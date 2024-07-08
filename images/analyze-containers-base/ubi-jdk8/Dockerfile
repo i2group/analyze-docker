@@ -21,6 +21,7 @@ RUN set -eux; \
   jq \
   iputils \
   shadow-utils \
+  diffutils \
   findutils \
   tar \
   gzip \
