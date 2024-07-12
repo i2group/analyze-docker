@@ -47,4 +47,4 @@ COPY environment.sh /opt/environment.sh
 VOLUME ["/usr/local/etc/haproxy"]
 
 ENTRYPOINT ["/opt/docker-entrypoint.sh"]
-CMD ["haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+CMD ["haproxy", "-f", "/usr/local/etc/haproxy"]
