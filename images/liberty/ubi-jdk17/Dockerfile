@@ -6,7 +6,7 @@
 #
 # Inspired by: https://github.com/OpenLiberty/ci.docker
 # Original copyright:
-## Copyright 2022-2023 IBM Corporation and others
+## Copyright 2022-2024 IBM Corporation and others
 ## This product includes software developed at
 ## The Open Liberty Project (https://openliberty.io/).
 
