@@ -97,7 +97,6 @@ function main() {
       curl --version; \
       sed --version; \
       uuidgen --version; \
-      xmlstarlet --version; \
       jq --version; \
       shasum --version; \
       diff --version; \
@@ -158,27 +157,27 @@ function main() {
   "i2group/i2eng-analyze-containers-base"*)
     test_image "${IMAGE}" "openssl version; \
     tar --help; \
+    xmlstarlet --version; \
     gosu nobody true; \
     jq --version;"
     ;;
   "i2group/i2eng-textchart-data-access"*)
-    docker_args=("-e" "LICENSE=dev" 
-    "-e" "ADMIN_USER=admin" 
-    "-e" "ADMIN_PASSWORD=12345" 
-    "-e" "USER_ID=$(id -u)" 
-    "-e" "GROUP_ID=$(id -g)"
-    "-e" "DB_DIALECT=sqlserver"
+    docker_args=("-e" "LICENSE=dev"
+      "-e" "ADMIN_USER=admin"
+      "-e" "ADMIN_PASSWORD=12345"
+      "-e" "USER_ID=$(id -u)"
+      "-e" "GROUP_ID=$(id -g)"
+      "-e" "DB_DIALECT=sqlserver"
     )
-    test_image "${IMAGE}" "java -version; \
-      xmlstarlet --version;" docker_args
+    test_image "${IMAGE}" "java -version" docker_args
     ;;
   "i2group/i2eng-textchart-"*)
-    docker_args=("-e" "LICENSE=dev" 
-    "-e" "ADMIN_USER=admin" 
-    "-e" "ADMIN_PASSWORD=12345" 
-    "-e" "USER_ID=$(id -u)" 
-    "-e" "GROUP_ID=$(id -g)"
-    "-e" "DB_DIALECT=sqlserver"
+    docker_args=("-e" "LICENSE=dev"
+      "-e" "ADMIN_USER=admin"
+      "-e" "ADMIN_PASSWORD=12345"
+      "-e" "USER_ID=$(id -u)"
+      "-e" "GROUP_ID=$(id -g)"
+      "-e" "DB_DIALECT=sqlserver"
     )
     test_image "${IMAGE}" "java -version; \
       jq --version;" docker_args

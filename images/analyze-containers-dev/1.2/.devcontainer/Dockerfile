@@ -53,10 +53,6 @@ RUN microdnf update -y \
   # jq and curl already installed by common-redhat
   && dnf config-manager --nogpgcheck --add-repo https://cli.github.com/packages/rpm/gh-cli.repo \
   && ARCH=`uname -m` \
-  # Epel 8 and 9 doesn't have the xmlstarlet package
-  && yumdownloader --resolve "http://mirror.stream.centos.org/9-stream/AppStream/${ARCH}/os/Packages/xmlstarlet-1.6.1-20.el9.${ARCH}.rpm" \
-  && rpm -ivh *.rpm \
-  && rm *.rpm \
   && microdnf -y remove /usr/bin/python \
   && dnf -y module enable nodejs:20 \
   && dnf -y install nodejs unzip \
@@ -80,7 +76,8 @@ RUN microdnf update -y \
   python3.12-pip \
   nodejs \
   npm \
-  
+  libxml2 \
+  libxslt \
   # Clean up
   && microdnf clean all \
   # Ensure symlinks are created for the correct version of Python
@@ -96,6 +93,10 @@ RUN microdnf update -y \
   && chmod 755 /usr/local/bin/jf \
   && mkdir -p "/home/${USERNAME}/.docker" \
   && chown -R "${USERNAME}" "/home/${USERNAME}"
+
+# TODO: Uncomment once the base image is released
+# Copy the compiled xmlstarlet binary from the base image
+#COPY --from=i2group/i2eng-analyze-containers-base:ubi-jdk17 /usr/local/bin/xmlstarlet /usr/local/bin/xmlstarlet
 
 # Save command bash history
 # hadolint ignore=SC2028
