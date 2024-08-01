@@ -97,6 +97,7 @@ function main() {
       curl --version; \
       sed --version; \
       uuidgen --version; \
+      xmlstarlet --version; \
       jq --version; \
       shasum --version; \
       diff --version; \
@@ -169,7 +170,8 @@ function main() {
       "-e" "GROUP_ID=$(id -g)"
       "-e" "DB_DIALECT=sqlserver"
     )
-    test_image "${IMAGE}" "java -version" docker_args
+    test_image "${IMAGE}" "java -version; \
+      xmlstarlet --version;" docker_args
     ;;
   "i2group/i2eng-textchart-"*)
     docker_args=("-e" "LICENSE=dev"

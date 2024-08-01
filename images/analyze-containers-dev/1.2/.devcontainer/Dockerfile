@@ -94,9 +94,8 @@ RUN microdnf update -y \
   && mkdir -p "/home/${USERNAME}/.docker" \
   && chown -R "${USERNAME}" "/home/${USERNAME}"
 
-# TODO: Uncomment once the base image is released
 # Copy the compiled xmlstarlet binary from the base image
-#COPY --from=i2group/i2eng-analyze-containers-base:ubi-jdk17 /usr/local/bin/xmlstarlet /usr/local/bin/xmlstarlet
+COPY --from=i2group/i2eng-analyze-containers-base:ubi-jdk17 /usr/local/bin/xmlstarlet /usr/local/bin/xmlstarlet
 
 # Save command bash history
 # hadolint ignore=SC2028
