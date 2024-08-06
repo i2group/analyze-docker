@@ -1,7 +1,8 @@
 # Analyze Docker
 
+
 Welcome to the GitHub home page for the Docker image packaging for the official i2 images. The analyze-docker
-repository provides Dockerfiles used in [Analyze Containers](https://github.com/i2group/analyze-containers)
+repository provides Dockerfiles used in [Analyze Containers](https://github.com/i2group/analyze-deployment-tooling)
 which provide a reference architecture for creating a containerized deployment of i2 Analyze.
 
 ## Table of Contents
@@ -80,7 +81,7 @@ You can raise issues and questions about the i2 images [HERE](https://github.com
 
 ## Related
 
-The images in this repository can be used with the [Analyze Containers](https://i2group.github.io/analyze-containers) environment.
+The images in this repository can be used with the [Analyze Containers](https://i2group.github.io/analyze-deployment-tooling) environment.
 
 ## Attribution
 

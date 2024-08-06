@@ -11,7 +11,7 @@ Used for Grafana in a deployment of i2 Analyze.
   - [i2 Group Support statement](https://support.i2group.com/s/support-statement)
 
 - **Using this image:**  
-  [Grafana](https://i2group.github.io/analyze-containers/content/images-and-containers/grafana.html)
+  [Grafana](https://i2group.github.io/analyze-deployment-tooling/content/images-and-containers/grafana.html)
 
 The image extends the official [grafana](https://hub.docker.com/r/grafana/grafana) image.
 
@@ -23,7 +23,7 @@ The image extends the official [grafana](https://hub.docker.com/r/grafana/grafan
 
 ## License
 
-Distributed under the [MIT License](../../LICENSE).
+Distributed under the [MIT License](https://github.com/i2group/analyze-docker/blob/main/LICENSE).
 
 As with all Docker images, these likely also contain other software which may be under other licenses (such as Bash, etc from the base distribution, along with any direct or indirect dependencies of the primary software being contained).
 
