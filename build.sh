@@ -173,7 +173,7 @@ function download_textchart_manager() {
 
   # TODO: Are this versions correct or do they need to come from a different file? E.g. pom.xml
   pushd "${build_folder}/shared"
-  get_rosoka_package "LxBundle" "7.5.2.2" "zip"
+  get_rosoka_package "LxBundle" "7.5.3.2" "zip"
   get_rosoka_package "GxBundle" "7.3.0.0" "tbz2"
   popd
   pushd "${build_folder}/rsm"
