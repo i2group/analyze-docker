@@ -57,7 +57,8 @@ RUN microdnf update -y \
   && dnf -y module enable nodejs:20 \
   && dnf -y install nodejs unzip \
   && YQ_LATEST_VERSION=$(curl -s https://api.github.com/repos/mikefarah/yq/releases/latest |  jq -r '.tag_name') \
-  && wget https://github.com/mikefarah/yq/releases/download/${YQ_LATEST_VERSION}/yq_linux_amd64.tar.gz -O - | tar xz && mv yq_linux_amd64 /usr/bin/yq \
+  && if [[ "${ARCH}" == "aarch64" ]]; then YQ_PACKAGE_NAME="yq_linux_arm64"; else YQ_PACKAGE_NAME="yq_linux_amd64"; fi \
+  && wget "https://github.com/mikefarah/yq/releases/download/${YQ_LATEST_VERSION}/${YQ_PACKAGE_NAME}.tar.gz" -O - | tar xz && mv "${YQ_PACKAGE_NAME}" /usr/bin/yq \
   # Install AWS CLI
   && curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "awscliv2.zip" \
   && unzip awscliv2.zip \
