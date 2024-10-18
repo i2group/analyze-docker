@@ -4,12 +4,12 @@
 #
 # SPDX short identifier: MIT
 
-ARG GRAFANA_VERSION=11.1.0
+ARG GRAFANA_VERSION=11.2.2
 FROM grafana/grafana-enterprise:"${GRAFANA_VERSION}"
 
 # Dynamic labels
 ARG revision
-ARG GRAFANA_VERSION=11.1.0
+ARG GRAFANA_VERSION=11.2.2
 
 LABEL name="Grafana" \
   maintainer="i2 Group" \
