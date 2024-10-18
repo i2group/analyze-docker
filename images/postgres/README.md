@@ -16,7 +16,8 @@ The image is inspired by the official [postgres](https://hub.docker.com/_/postgr
 
 ## Supported tags
 
-- [`16`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/postgres/16/Dockerfile)
+- [`17`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/postgres/17/Dockerfile)
+- [`16`](https://github.com/i2group/analyze-docker/blob/main/images/postgres/16/Dockerfile)
 - [`15`](https://github.com/i2group/analyze-docker/blob/main/images/postgres/15/Dockerfile)
 
 ## License
