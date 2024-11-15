@@ -5,7 +5,8 @@
 # SPDX short identifier: MIT
 
 ARG SQLSERVER_VERSION=2022
-FROM "mcr.microsoft.com/mssql/rhel/server:${SQLSERVER_VERSION}-latest"
+# TODO: remove the sha256 once the image is stable
+FROM "mcr.microsoft.com/mssql/rhel/server:${SQLSERVER_VERSION}-latest@sha256:3d70ace037d1624a37945ae7a17ad85dcbbeba9d5ca78c1fa5b26df8b4e4154f"
 
 ARG SQLSERVER_VERSION=2022
 
