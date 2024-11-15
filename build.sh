@@ -146,7 +146,17 @@ function get_rosoka_package() {
   fi
 
   local url="https://corp.imtholdings.com/nexus/repository/maven-releases/com/rosoka/${package_name}/${package_version}/${package_name}-${package_version}.${package_extension}"
-  curl -s -u "${NEXUS_USERNAME}":"${NEXUS_TOKEN}" -X GET "${url}" -H "accept: application/json" -o "${package_name}.${package_extension}"
+
+  # Perform the GET request and capture the HTTP status code
+  http_status=$(curl -s -u "${NEXUS_USERNAME}":"${NEXUS_TOKEN}" -w "%{http_code}" -X GET "${url}" -H "accept: application/json" -o "${package_name}.${package_extension}")
+
+  # Check if the package was not found (404 status code)
+  if [[ "$http_status" == "404" ]]; then
+    echo "Package not found in Nexus: ${package_name}.${package_extension}"
+    exit 1
+  else
+    echo "Package downloaded successfully: ${package_name}.${package_extension}"
+  fi
 }
 
 function download_textchart_worker() {
@@ -158,7 +168,7 @@ function download_textchart_worker() {
   mkdir -p "${build_folder}/rsm"
   pushd "${build_folder}/rsm"
   get_rosoka_package "RosokaServerWorker"
-  get_rosoka_package "RosokaServerWorkerDaemon"
+  get_rosoka_package "RosokaServerWorkerDaemon" "7.5.0.6"
   popd
 }
 
