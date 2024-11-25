@@ -18,6 +18,11 @@ fi
 
 DEFAULT_SERVER_DIR=/opt/ol/wlp/usr/servers/defaultServer
 DB_NAME="${DB_NAME:-"ISTORE"}"
+if [[ "${DB_DIALECT}" == "postgres" ]]; then
+  FILE_TABLE_SPACE_NAME="$(grep '^DatabaseTablespace=' "${DEFAULT_SERVER_DIR}/apps/opal-services.war/WEB-INF/classes/InfoStoreNamesPostgres.properties" | cut -d'=' -f2)"
+  TABLE_SPACE_NAME="${TABLE_SPACE_NAME:-"${FILE_TABLE_SPACE_NAME:-"pg_default"}"}"
+  TABLE_SPACE_LOCATION_DIR="${TABLE_SPACE_LOCATION_DIR:-"/var/lib/postgresql/data/${TABLE_SPACE_NAME}"}"
+fi
 
 # Load secrets if they exist on disk and export them as envs
 file_env 'DB_PASSWORD'
@@ -188,6 +193,16 @@ DISCO_FILESTORE_LOCATION="${DEFAULT_SERVER_DIR}/apps/opal-services.war/WEB-INF/c
 } >"${DISCO_FILESTORE_LOCATION}"
 
 export DB_NAME
+
+# TODO: remove this once GEM-1740 is resolved
+if [[ "${DB_DIALECT}" == "postgres" && "${TABLE_SPACE_NAME}" != "${FILE_TABLE_SPACE_NAME}" && "${TABLE_SPACE_NAME}" != "pg_default" ]]; then
+  sed -i "s~DatabaseTablespace=.*~DatabaseTablespace=${TABLE_SPACE_NAME}~g" "${DEFAULT_SERVER_DIR}/apps/opal-services.war/WEB-INF/classes/InfoStoreNamesPostgres.properties"
+  sed -i "s~BigDataTablespace=.*~BigDataTablespace=${TABLE_SPACE_NAME}~g" "${DEFAULT_SERVER_DIR}/apps/opal-services.war/WEB-INF/classes/InfoStoreNamesPostgres.properties"
+  sed -i "s~BigIndexTablespace=.*~BigIndexTablespace=${TABLE_SPACE_NAME}~g" "${DEFAULT_SERVER_DIR}/apps/opal-services.war/WEB-INF/classes/InfoStoreNamesPostgres.properties"
+  sed -i "s~SmallDataTablespace=.*~SmallDataTablespace=${TABLE_SPACE_NAME}~g" "${DEFAULT_SERVER_DIR}/apps/opal-services.war/WEB-INF/classes/InfoStoreNamesPostgres.properties"
+  sed -i "s~SmallIndexTablespace=.*~SmallIndexTablespace=${TABLE_SPACE_NAME}~g" "${DEFAULT_SERVER_DIR}/apps/opal-services.war/WEB-INF/classes/InfoStoreNamesPostgres.properties"
+  sed -i "s~TablespaceLocationDir=.*~${TABLE_SPACE_NAME}TablespaceLocationDir=${TABLE_SPACE_LOCATION_DIR}~g" "${DEFAULT_SERVER_DIR}/apps/opal-services.war/WEB-INF/classes/InfoStoreNamesPostgres.properties"
+fi
 
 rm -f /opt/ol/wlp/usr/servers/defaultServer/server.env
 
