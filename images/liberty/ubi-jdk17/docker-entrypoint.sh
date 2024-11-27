@@ -204,6 +204,11 @@ if [[ "${DB_DIALECT}" == "postgres" && "${TABLE_SPACE_NAME}" != "${FILE_TABLE_SP
   sed -i "s~TablespaceLocationDir=.*~${TABLE_SPACE_NAME}TablespaceLocationDir=${TABLE_SPACE_LOCATION_DIR}~g" "${DEFAULT_SERVER_DIR}/apps/opal-services.war/WEB-INF/classes/InfoStoreNamesPostgres.properties"
 fi
 
+# TODO: user an env variable for the ADT admin password
+if [[ -n "${ADT_ADMIN_PASSWORD}" ]]; then
+  sed -i 's/\(<user name="adt-admin" password="\)[^"]*\("\/>\)/\1'"${ADT_ADMIN_PASSWORD}"'\2/' /opt/ol/wlp/usr/shared/config/user.registry.xml
+fi
+
 rm -f /opt/ol/wlp/usr/servers/defaultServer/server.env
 
 for file in /opt/entrypoint.d/*; do
