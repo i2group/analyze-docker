@@ -5,8 +5,7 @@
 # SPDX short identifier: MIT
 
 ARG SQLSERVER_VERSION=2022
-# TODO: remove the sha256 once the image is stable
-FROM "mcr.microsoft.com/mssql/rhel/server:${SQLSERVER_VERSION}-latest@sha256:3d70ace037d1624a37945ae7a17ad85dcbbeba9d5ca78c1fa5b26df8b4e4154f"
+FROM "mcr.microsoft.com/mssql/rhel/server:${SQLSERVER_VERSION}-latest"
 
 ARG SQLSERVER_VERSION=2022
 
@@ -30,6 +29,15 @@ ARG USER=mssql
 COPY --chown="${USER}:0" docker-entrypoint.sh /opt/docker-entrypoint.sh
 COPY --chown="${USER}:0" environment.sh /opt/environment.sh
 
+# Lists packages (space separated) that we do not want to update.
+#
+# Due to a bug in OpenSSL causing SQL Server connection error 'TCP Provider: Error code 0x68'
+# we are currently excluding all OpenSSL related packages from updating until the issue has 
+# been resolved upstream.
+#
+# cspell:ignore openssl libssl libcrypto libcurl cryptsetup curl
+ARG EXCLUDED_PACKAGES='openssl* libssl* libcrypto* libcurl-minimal cryptsetup-libs curl-minimal'
+
 RUN set -eux; \
   mkdir -p /run/secrets /backup /var/i2a-data; \
   chown -R "${USER}" /tmp /run/secrets /backup /var/i2a-data; \
@@ -38,18 +46,14 @@ RUN set -eux; \
   RHEL_VERSION="$(rpm -q --queryformat '%{VERSION}' redhat-release | cut -d. -f1)"; \
   curl -o /etc/yum.repos.d/mssql-server.repo "https://packages.microsoft.com/config/rhel/${RHEL_VERSION}/mssql-server-${SQLSERVER_VERSION}.repo"; \
   # ACCEPT_EULA=y to update mssql packages
-  ACCEPT_EULA=Y dnf -y update; \
+  ACCEPT_EULA=Y dnf -y --exclude="${EXCLUDED_PACKAGES}" update; \
   dnf -y --nodocs install mssql-server-fts; \
   dnf clean all;
 
-# Temporary fix until the latest image has mssql-tools v18
-RUN curl https://packages.microsoft.com/config/rhel/9/prod.repo \
-  | tee /etc/yum.repos.d/mssql-release.repocurl https://packages.microsoft.com/config/rhel/9/prod.repo \
-  | tee /etc/yum.repos.d/mssql-release.repo; \
-  dnf -y remove mssql-tools unixODBC-utf16 unixODBC-utf16-devel; \
-  ACCEPT_EULA=Y dnf -y --nodocs install mssql-tools18 unixODBC-devel; \
-  dnf clean all; \
-  rm -rf /opt/mssql-tools && ln -s /opt/mssql-tools18 /opt/mssql-tools;
+# ADT looks for sqlcmd in /opt/mssql-tools/, thus we need to create a 
+# symlink as the mssql-tools path is versioned.
+RUN mkdir -p /opt/mssql-tools && \
+  ln -fs /opt/mssql-tools??/* /opt/mssql-tools/
 
 USER "${USER}"
 
