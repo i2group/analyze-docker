@@ -11,7 +11,7 @@ FROM i2group/i2eng-analyze-containers-base:ubi-jdk17
 # Dynamic labels
 ARG revision
 
-ARG ZK_VERSION="3.9.2"
+ARG ZK_VERSION="3.9.3"
 
 LABEL name="Apache ZooKeeper" \
   maintainer="i2 Group" \
@@ -59,7 +59,7 @@ RUN set -eux; \
         wget; \
     microdnf clean all;
 
-ARG GPG_KEY=AF3D175EC05DB249738D01AC8D8C3C3ED0B02E66
+ARG GPG_KEY=3F7A1D16FA4217B1DC75E1C9FFE35B7F15DFA1BA
 ARG SHORT_DISTRO_NAME=zookeeper-${ZK_VERSION}
 ARG DISTRO_NAME=apache-zookeeper-${ZK_VERSION}-bin
 
