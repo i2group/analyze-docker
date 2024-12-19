@@ -23,6 +23,7 @@ GATEWAY_CERTIFICATES_FILE="${TMP_SECRETS}/gateway.user.pem"
 EXTERNAL_CA_FILE="${TMP_SECRETS}/externalCA.cer"
 INTERNAL_CA_FILE="${TMP_SECRETS}/internalCA.cer"
 
+sudo chmod -R 777 /tmp
 if [[ -d "${TMP_SECRETS}" ]]; then
   rm -r "${TMP_SECRETS}"
 fi
