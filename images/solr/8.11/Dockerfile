@@ -6,10 +6,13 @@
 #
 # Inspired by: https://github.com/apache/solr-docker
 
-FROM eclipse-temurin:11-ubi9-minimal
-
-# Dynamic labels
+# Dynamic labels passed at build time
+# revision = CI build number or 'dev' for local builds
 ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
+FROM eclipse-temurin:11-ubi9-minimal
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 

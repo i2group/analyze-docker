@@ -19,4 +19,25 @@ LABEL name="Analyze Containers Connectors Base" \
   description="This image contains NodeJS JavaScript runtime and a stripped down Red Hat's UBI as the base OS." \
   license="MIT"
 
+# Use root
+# hadolint ignore=DL3002
+USER root
+
+# We want latest of all packages when building the image
+# hadolint ignore=DL3013,DL3041
+RUN set -eux; \
+  dnf -y update \
+  && dnf -y install \
+  jq \
+  python3.12-pip \
+  # Ensure symlinks are created for the correct version of Pip
+  && ln -sf /usr/bin/pip3.12 /usr/bin/pip3 \
+  && ln -sf /usr/bin/pip3.12 /usr/bin/pip \
+  # Clean up
+  && dnf clean all \
+  && pip3 install --no-cache-dir s3cmd;
+
+# Switch back to non-root
+USER default
+
 COPY environment.sh /opt/environment.sh

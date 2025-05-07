@@ -27,6 +27,7 @@ LABEL name="Postgres" \
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
   ca-certificates \
+  curl \
   postgresql-${POSTGRES_VERSION}-postgis-${POSTGIS_VERSION} \
   postgresql-${POSTGRES_VERSION}-postgis-${POSTGIS_VERSION}-scripts \
   postgresql-${POSTGRES_VERSION}-cron \

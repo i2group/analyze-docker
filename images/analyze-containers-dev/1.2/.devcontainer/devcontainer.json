@@ -9,7 +9,7 @@
       // set vscode arg for Dockerfile
       "vscode": "true",
       "version": "${localEnv:DEV_CONTAINER_VERSION}",
-      "revision": "${localEnv:CIRCLE_BUILD_NUM}"
+      "revision": "${localEnv:REVISION}"
     }
   },
   "hostRequirements": { "memory": "4gb" }

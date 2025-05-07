@@ -5,7 +5,7 @@
 # SPDX short identifier: MIT
 
 ARG GRAFANA_VERSION=10.0.3
-FROM grafana/grafana-oss:"${GRAFANA_VERSION}"
+FROM "grafana/grafana-oss:${GRAFANA_VERSION}"
 
 # Dynamic labels
 ARG revision

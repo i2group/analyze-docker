@@ -6,10 +6,13 @@
 #
 # Inspired by: https://github.com/apache/solr-docker
 
-FROM i2group/i2eng-analyze-containers-base:ubi-jdk17
-
-# Dynamic labels
+# Dynamic labels passed at build time
+# revision = CI build number or 'dev' for local builds
 ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
+FROM i2group/i2eng-analyze-containers-base:ubi-jdk17-${revision}
 
 ARG SOLR_VERSION="9.6.1"
 # empty for the full distribution, "-slim" for the slim distribution
@@ -70,8 +73,6 @@ RUN set -ex; \
   tar -C /opt --extract --preserve-permissions --file "/opt/$SOLR_BINARY"; \
   rm "/opt/$SOLR_BINARY"*; \
   microdnf clean all;
-
-
 
 LABEL name="Apache Solr" \
   maintainer="i2 Group" \

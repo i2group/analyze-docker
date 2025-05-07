@@ -47,7 +47,8 @@ RUN set -eux; \
   curl -o /etc/yum.repos.d/mssql-server.repo "https://packages.microsoft.com/config/rhel/${RHEL_VERSION}/mssql-server-${SQLSERVER_VERSION}.repo"; \
   # ACCEPT_EULA=y to update mssql packages
   ACCEPT_EULA=Y dnf -y --exclude="${EXCLUDED_PACKAGES}" update; \
-  dnf -y --nodocs install mssql-server-fts; \
+  dnf -y --nodocs install mssql-server-fts \
+  ca-certificates; \
   dnf clean all;
 
 # ADT looks for sqlcmd in /opt/mssql-tools/, thus we need to create a 

@@ -325,6 +325,11 @@ function main() {
     node --version; \
     npm --version;" docker_args
     ;;
+  "i2group/i2eng-connector-designer-connectors-base"*)
+    test_image "${IMAGE}" "openssl version; \
+    node --version; \
+    npm --version;" docker_args
+    ;;
   "i2group/i2eng-connector-"*)
     test_image "${IMAGE}" "[[ $(id -u) == 1001 ]] && exit 0 || exit 1" docker_args
     ;;

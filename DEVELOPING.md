@@ -93,6 +93,17 @@ E.g.
 ### Making a change
 
 The top scripts used in the project are `build.sh` and `test.sh`.
+Some images require custom setup before they can be built;
+these images have their own `build.sh` script file within the image
+folder.
+
+If an image does have its own `build.sh` script then the top-level
+`build.sh` will `source` it (just) before the docker build operation.
+It will be invoked with the working directory set to the image's folder
+(i.e. the same directory as the Dockerfile).
+If the image does _not_ have its own then the top-level build.sh
+functionality will be done instead.
+
 During the rest of this document we will provide examples of how to make changes
 to the Solr image and run these commands.
 Use the `-h` flag for more information on how to run them.
@@ -102,6 +113,7 @@ To make a change to Solr image in version 8.11, follow the steps:
 1. Go to `images/solr/8.11`
 1. Make the required changes in your editor.
   If you added a new dependency ensure to add it to the test in `test.sh`.
+1. Go back to the top-level folder (the folder containing this document).
 1. Run `./build.sh -i solr -v 8.11` to build your image locally.
   At the end you should see the image `i2group/i2eng-solr:8.11` created.
 1. Run `./test.sh i2group/i2eng-solr:8.11` to ensure it starts and is correctly configured.

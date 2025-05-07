@@ -5,11 +5,16 @@
 # SPDX short identifier: MIT
 # 
 # Inspired by: https://github.com/microsoft/vscode-dev-containers/blob/main/containers/debian/.devcontainer/base.Dockerfile
-FROM eclipse-temurin:17-ubi9-minimal
 
-# Dynamic labels
-ARG revision \
-  version
+# Dynamic labels passed at build time
+# revision = CI build number or 'dev' for local builds
+ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
+FROM i2group/i2eng-analyze-containers-base:ubi-jdk17-${revision} AS ac-base
+
+FROM eclipse-temurin:17-ubi9-minimal
 
 # [Option] Upgrade OS packages to their latest versions
 ARG UPGRADE_PACKAGES="true"
@@ -96,7 +101,7 @@ RUN microdnf update -y \
   && chown -R "${USERNAME}" "/home/${USERNAME}"
 
 # Copy the compiled xmlstarlet binary from the base image
-COPY --from=i2group/i2eng-analyze-containers-base:ubi-jdk17 /usr/local/bin/xmlstarlet /usr/local/bin/xmlstarlet
+COPY --from=ac-base /usr/local/bin/xmlstarlet /usr/local/bin/xmlstarlet
 
 # Save command bash history
 # hadolint ignore=SC2028

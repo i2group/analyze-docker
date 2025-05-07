@@ -6,10 +6,13 @@
 #
 # Inspired by: https://github.com/31z4/zookeeper-docker
 
-FROM i2group/i2eng-analyze-containers-base:ubi-jdk17
-
-# Dynamic labels
+# Dynamic labels passed at build time
+# revision = CI build number or 'dev' for local builds
 ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
+FROM i2group/i2eng-analyze-containers-base:ubi-jdk17-${revision}
 
 ARG ZK_VERSION="3.9.3"
 
@@ -44,7 +47,6 @@ RUN set -eux; \
     useradd -r -g zookeeper --uid=1000 zookeeper; \
     mkdir -p "$ZOO_DATA_LOG_DIR" "$ZOO_DATA_DIR" "$ZOO_CONF_DIR" "$ZOO_LOG_DIR"; \
     chown zookeeper:zookeeper "$ZOO_DATA_LOG_DIR" "$ZOO_DATA_DIR" "$ZOO_CONF_DIR" "$ZOO_LOG_DIR"
-
 
 # Gosu is part of the base image so we don't try to reinstall
 # Netcat is ncat which is part of nmap package

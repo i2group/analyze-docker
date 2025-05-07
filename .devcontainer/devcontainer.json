@@ -2,9 +2,10 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node
 {
   "name": "Node.js",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
-
+  "build": {
+    // We use a Dockerfile. More info: https://containers.dev/guide/dockerfile
+    "dockerfile": "Dockerfile"
+  },
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
@@ -20,8 +21,11 @@
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
 
-  // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "npm install -g \"@vscode/dev-container-cli\"; cd .circleci/dynamic; npm install --production=false; sudo ln -s /usr/bin/gpg /usr/local/bin/gpg",
+  // After the container is created, we make links from the container's home directory
+  // to all the user's personal ~/.something files. This is useful for tools like Git
+  // etc so that the dev container accesses the same configuration that the user is used to.
+  // We need special handling of the .ssh directory, as it needs to be copied instead of linked.
+  "postCreateCommand": "( ( cd /userhome && find . -mindepth 1 -maxdepth 1 -name '.*' -print | sort | cut -c 3- ) | while IFS= read -r FILE; do ( cd && rm -rf \"${FILE}\" && ln -sf \"/userhome/${FILE}\" ); done && if [ -d /userhome/.ssh ]; then rm -rf ~/.ssh && cp -pr /userhome/.ssh ~; fi ) && ( cd .circleci/dynamic && npm install --omit=dev )",
 
   // Configure tool-specific properties.
   "customizations": {
@@ -45,7 +49,8 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=cached",
   "workspaceFolder": "${localWorkspaceFolder}",
   "mounts": [
-    "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind"
+    "source=/mnt,target=/mnt,type=bind",
+    "source=${localEnv:HOME},target=/userhome/,type=bind"
   ]
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.

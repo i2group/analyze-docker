@@ -10,44 +10,39 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 USAGE="""
 Usage:
-  build.sh -i <image_name> -v <version> [-t <tag>] [-p] [-m] [-n]
+  build.sh -i <image_name> -v <version> [-t <tag>]... [-p] [-m] [-n]
   build.sh -h
 
 Options:
   -i <image_name>         The image name.
   -v <version>            The image version.
-  -t <tag>                Optional tag to push. Defaults to '<version>'.
+  -t <tag>                (Optional) tag to push.
+                          Can be passed in multiple times to set multiple tags.
+                          Defaults to '<version>'.
+  -r <revision>           The value of the 'revision' ARG to pass in.
+                          Defaults to 'dev'.
   -p                      Will push the images to the registry.
   -m                      Builds multi-arch images.
   -n                      Build without cache
   -h                      Display the help.
+
+Summary:
+  This script builds a (possibly multi-architecture) docker image.
+  It can push the image to the registry if requested.
 """
 
 function print() {
   echo ""
   echo "#----------------------------------------------------------------------"
-  echo "# $1"
+  echo "# $*"
   echo "#----------------------------------------------------------------------"
 }
 
-function usage() {
+function print_error_and_usage() {
+  printf "\n\e[31mERROR: %s\n" "$*" >&2
+  printf "\e[0m" >&2
   echo -e "${USAGE}" >&2
   exit 1
-}
-
-function print_error_and_exit() {
-  print_error "$1"
-  exit 1
-}
-
-function print_error() {
-  printf "\n\e[31mERROR: %s\n" "$1" >&2
-  printf "\e[0m" >&2
-}
-
-function print_error_and_usage() {
-  print_error "$1"
-  usage
 }
 
 function help() {
@@ -56,8 +51,10 @@ function help() {
 }
 
 function parse_arguments() {
+  TAGS=()
+  REVISION=''
   # cspell:ignore pmnh
-  while getopts ":i:v:t:pmnh" flag; do
+  while getopts ":i:v:r:t:pmnh" flag; do
     case "${flag}" in
     i)
       IMAGE_NAME="${OPTARG}"
@@ -65,8 +62,11 @@ function parse_arguments() {
     v)
       VERSION="${OPTARG}"
       ;;
+    r)
+      REVISION="${OPTARG}"
+      ;;
     t)
-      TAG="${OPTARG}"
+      TAGS+=("${OPTARG}")
       ;;
     p)
       PUSH_FLAG="true"
@@ -81,7 +81,7 @@ function parse_arguments() {
       help
       ;;
     \?)
-      usage
+      print_error_and_usage "Unknown option: ${OPTARG}"
       ;;
     :)
       print_error_and_usage "Invalid option: ${OPTARG} requires an argument"
@@ -89,33 +89,51 @@ function parse_arguments() {
     esac
   done
 
-  if [[ -z "${IMAGE_NAME:-""}" ]]; then
+  if [[ -z "${IMAGE_NAME:-}" ]]; then
     print_error_and_usage "Image name needs to be passed to be able to build"
   fi
+  if [[ ! "${IMAGE_NAME}" =~ ^[-_.a-zA-Z0-9]+$ ]]; then
+    print_error_and_usage "Invalid image name: '${IMAGE_NAME}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
+  fi
 
-  if [[ -z "${VERSION:-""}" ]]; then
+  if [[ -z "${VERSION:-}" ]]; then
     print_error_and_usage "Version needs to be passed to be able to build"
   fi
-
-  if [[ -z "${TAG:-""}" ]]; then
-    TAG="${VERSION}"
+  if [[ ! "${VERSION}" =~ ^[-_.a-zA-Z0-9]+$ ]]; then
+    print_error_and_usage "Invalid revision: '${VERSION}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
   fi
 
-  if [[ -z "${PUSH_FLAG:-""}" ]]; then
+  if [[ -z "${REVISION:-}" ]]; then
+    REVISION="dev"
+  fi
+  if [[ ! "${REVISION}" =~ ^[-_a-z.A-Z0-9]+$ ]]; then
+    print_error_and_usage "Invalid revision: '${REVISION}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
+  fi
+
+  if [[ "${#TAGS[@]}" -eq 0 ]]; then
+    TAGS=("${VERSION}")
+  fi
+  local tag
+  for tag in "${TAGS[@]}"; do
+    if [[ -z "${tag}" || ! "${tag}" =~ ^[-_a-z.A-Z0-9]+$ ]]; then
+      print_error_and_usage "Invalid tag: '${tag}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
+    fi
+  done
+
+  if [[ -z "${PUSH_FLAG:-}" ]]; then
     PUSH_FLAG="false"
   fi
 
-  if [[ -z "${MULTI_ARCH_FLAG:-""}" ]]; then
+  if [[ -z "${MULTI_ARCH_FLAG:-}" ]]; then
     MULTI_ARCH_FLAG="false"
   fi
 
-  if [[ -z "${NO_CACHE:-""}" ]]; then
+  if [[ -z "${NO_CACHE:-}" ]]; then
     NO_CACHE="false"
   fi
 
   IMAGE_REPO="i2group"
   IMAGE_PREFIX="i2eng"
-  NEXUS_USERNAME="${NEXUS_USERNAME:-"i2group-cci-account"}"
 }
 
 function validate() {
@@ -130,158 +148,104 @@ function validate() {
   fi
 }
 
-function get_rosoka_package() {
-  local package_name="$1"
-  local package_version="${2:-"${VERSION}"}"
-  local package_extension="${3:-"jar"}"
-
-  if [[ "${NO_CACHE}" == "true" ]]; then
-    rm -f "${package_name}.${package_extension}"
-  elif [[ -f "${package_name}.${package_extension}" ]]; then
-    return
-  fi
-
-  if [[ -z "${NEXUS_TOKEN}" ]]; then
-    print_error_and_exit "Please provide authentication for Nexus. Variable NEXUS_TOKEN is missing."
-  fi
-
-  local url="https://corp.imtholdings.com/nexus/repository/maven-releases/com/rosoka/${package_name}/${package_version}/${package_name}-${package_version}.${package_extension}"
-
-  # Perform the GET request and capture the HTTP status code
-  http_status=$(curl -s -u "${NEXUS_USERNAME}":"${NEXUS_TOKEN}" -w "%{http_code}" -X GET "${url}" -H "accept: application/json" -o "${package_name}.${package_extension}")
-
-  # Check if the package was not found (404 status code)
-  if [[ "$http_status" == "404" ]]; then
-    echo "Package not found in Nexus: ${package_name}.${package_extension}"
-    exit 1
-  else
-    echo "Package downloaded successfully: ${package_name}.${package_extension}"
-  fi
-}
-
-function download_textchart_worker() {
-  local build_folder="$1"
-
-  if [[ -d "${build_folder}/rsm" ]]; then
-    rm -rf "${build_folder}/rsm"
-  fi
-  mkdir -p "${build_folder}/rsm"
-  pushd "${build_folder}/rsm"
-  get_rosoka_package "RosokaServerWorker"
-  get_rosoka_package "RosokaServerWorkerDaemon" "7.5.0.6"
-  popd
-}
-
-function download_textchart_manager() {
-  local build_folder="$1"
-  local oconnect_jars=("RosokaServerFileOutConnector" "RosokaServerCSVOutputConnector" "RosokaServerI2SQLOutConnector")
-  local iconnect_jars=("RosokaServerScannerConnector")
-
-  local jar_name
-
-  mkdir -p "${build_folder}/rsm/oconnect" "${build_folder}/rsm/iconnect"
-
-  # TODO: Are this versions correct or do they need to come from a different file? E.g. pom.xml
-  pushd "${build_folder}/shared"
-  get_rosoka_package "LxBundle" "7.5.3.2" "zip"
-  get_rosoka_package "GxBundle" "7.3.0.0" "tbz2"
-  popd
-  pushd "${build_folder}/rsm"
-  get_rosoka_package "RosokaServerManager"
-  pushd "oconnect"
-  for jar_name in "${oconnect_jars[@]}"; do
-    get_rosoka_package "$jar_name"
+# Downloads the specified maven artifact into the current directory.
+# $* = one or more maven artifacts to download
+# Example: "com.my.company:MyPackageName:1.2.3:jar"
+function download_maven_artifact() {
+  local output_directory
+  output_directory="$(pwd)"
+  local artifact
+  while [[ "$#" -gt 0 ]]; do
+    artifact="$1"
+    shift
+    mvn dependency:copy \
+      -Dartifact="${artifact}" \
+      -DoutputDirectory="${output_directory}" \
+      -Dmdep.stripVersion=true
   done
-  popd
-  pushd "iconnect"
-  for jar_name in "${iconnect_jars[@]}"; do
-    get_rosoka_package "$jar_name"
-  done
-  popd
-  popd
-}
-
-function download_textchart_data_access() {
-  local build_folder="$1"
-
-  local jar_name
-
-  mkdir -p "${build_folder}/rsm"
-  pushd "${build_folder}/rsm"
-  get_rosoka_package "RosokaDataAccessServer"
-  get_rosoka_package "RosokaDataAccessDaemon" "7.4.3.1"
-  popd
 }
 
 function download_connector_package() {
   local build_folder="$1"
-
   # For now connectors only support one version given by the i2connectors.json file = major supported version
   "${SCRIPT_DIR}/internal/scripts/package-shared-connectors/download-and-extract-connectors" -i "${IMAGE_NAME}"
 }
 
-function package_semver_util() {
+function copy_cert_tools_and_environment_scripts() {
+  # Most images use these scripts
   local build_folder="$1"
-
-  if [[ "${NO_CACHE}" == "true" ]]; then
-    if ls "${build_folder}/semver_util-"*.tgz 1>/dev/null 2>&1; then
-      rm -f "${build_folder}/semver_util-"*.tgz
-    fi
-  elif ls "${build_folder}/semver_util-"*.tgz 1>/dev/null 2>&1; then
-    return
-  fi
-
-  pushd "${SCRIPT_DIR}/internal/scripts/package-shared-connectors/semver_util"
-  npm install
-  npm pack --pack-destination "${build_folder}"
-  popd
+  cp "${SCRIPT_DIR}/utils/environment.sh" "${build_folder}/environment.sh"
+  cp "${SCRIPT_DIR}/utils/cert_tools.sh" "${build_folder}/cert_tools.sh"
 }
 
 function prepare_build_context() {
-  local env_file_path="${SCRIPT_DIR}/utils/environment.sh"
-  local cert_tools_file_path="${SCRIPT_DIR}/utils/cert_tools.sh"
   local build_folder="${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}"
-  local env_context_path="${build_folder}/environment.sh"
-  local cert_tools_context_path="${build_folder}/cert_tools.sh"
 
-  # analyze-containers-dev doesn't use the environment.sh util
-  if [[ "${IMAGE_NAME}" == "analyze-containers-dev" ]]; then
-    package_semver_util "${build_folder}/.devcontainer"
-    return
+  # Images can have their own custom preparation steps
+  # If they do, run those.
+  if [[ -f "${build_folder}/build.sh" ]]; then
+    local working_directory_before
+    working_directory_before="$(pwd)"
+    cd "${build_folder}"
+    # shellcheck disable=SC1091
+    . "./build.sh"
+    cd "${working_directory_before}"
+  else
+    # If not, we copy environment.sh and cert_tools.sh
+    copy_cert_tools_and_environment_scripts "${build_folder}"
   fi
+}
 
-  # Solr 8.11 version had a special path
-  if [[ "${IMAGE_NAME}" == "solr" && "${VERSION}" == "8.11"* ]]; then
-    env_context_path="${build_folder}/scripts/environment.sh"
-    cert_tools_context_path="${build_folder}/scripts/cert_tools.sh"
-  fi
-
-  cp "${env_file_path}" "${env_context_path}"
-  cp "${cert_tools_file_path}" "${cert_tools_context_path}"
-
-  case "${IMAGE_NAME}" in
-  "textchart-manager")
-    download_textchart_manager "${build_folder}"
-    ;;
-  "textchart-worker")
-    download_textchart_worker "${build_folder}"
-    ;;
-  "textchart-data-access")
-    download_textchart_data_access "${build_folder}"
-    ;;
-  "connector-"*)
-    download_connector_package "${build_folder}"
-    ;;
-  esac
+# Shows what files are in the directory and their checksums
+# $1 = directory to list. Defaults to current directory.
+function log_directory_contents() {
+  (
+    # Cope with incompatibility between Linux and BSD
+    if stat --version >/dev/null 2>&1; then
+      # We have GNU stat, e.g. we are on WSL2 Ubuntu Linux
+      function ldc_get_attributes() { stat -c '%A' "$@"; }
+      function ldc_get_size() { stat -c '%s' "$@"; }
+      function ldc_get_timestamp() { stat -c '%y' "$@" | sed -E 's/ /T/' | cut -d'.' -f1 | sed -E 's/ +0000$/Z/'; }
+    else
+      # We have BSD stat, e.g. we are on MacOS
+      function ldc_get_attributes() { stat -f '%Sp' "$@"; }
+      function ldc_get_size() { stat -f '%z' "$@"; }
+      function ldc_get_timestamp() { stat -f '%Sm' -t '%Y-%m-%dT%H:%M:%SZ' "$@"; }
+    fi
+    if command -v sha256sum >/dev/null 2>&1; then
+      # We have sha256sum available, e.g. we are on Linux
+      function ldc_get_sha() { sha256sum "$@" | cut -d' ' -f1; }
+    else
+      # We will try shasum instead, e.g. we are on MacOS
+      function ldc_get_sha() { shasum -a 256 "$@" | cut -d' ' -f1; }
+    fi
+    cd "${1:-.}"
+    find . -mindepth 1 -print0 | sort -z | while IFS= read -r -d '' f; do
+      file_attributes=$(ldc_get_attributes "${f}")
+      file_size=$(ldc_get_size "${f}")
+      file_timestamp=$(ldc_get_timestamp "${f}")
+      if [[ -f "${f}" ]]; then
+        file_checksum=$(ldc_get_sha "${f}")
+      else
+        file_checksum="--------------------------------"
+      fi
+      if [[ -d "${f}" ]]; then
+        f="${f}/"
+      fi
+      echo "${file_checksum} ${file_attributes} ${file_size} ${file_timestamp} ${f}" | awk '{printf "# %s %-10s %11s %19s %s\n", substr($1,1,16), $2, $3, $4, substr($5, 3)}'
+    done
+  )
 }
 
 function build_image() {
   local is_dev_container="false"
   local build_folder="${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}"
-  local full_image_name="${IMAGE_REPO}/${IMAGE_PREFIX}-${IMAGE_NAME}:${TAG}"
+  local full_image_name_without_colon_tag="${IMAGE_REPO}/${IMAGE_PREFIX}-${IMAGE_NAME}"
   local extra_args=()
 
-  [[ -d "${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}/.devcontainer" ]] && is_dev_container="true"
+  if [[ -d "${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}/.devcontainer" ]]; then
+    is_dev_container="true"
+  fi
 
   # SQL Server & Db2 only supports amd64
   if [[ "${IMAGE_NAME}" == "sqlserver" || "${IMAGE_NAME}" == "db2" ]]; then
@@ -299,14 +263,12 @@ function build_image() {
     extra_args+=("--no-cache")
   fi
 
-  print "Building ${IMAGE_NAME}"
+  print "Building ${IMAGE_NAME} from:"
+  log_directory_contents "${build_folder}"
 
-  BUILDER_NAME="analyze-docker"
-  if [[ -n "${CIRCLE_BUILD_NUM:-}" ]]; then
-    BUILDER_NAME="${BUILDER_NAME}-${CIRCLE_BUILD_NUM}"
-  fi
+  BUILDER_NAME="analyze-docker-${REVISION}"
 
-  if docker buildx ls --format "{{.Name}}" | grep -q "^${BUILDER_NAME}$"; then
+  if docker buildx ls --format "{{.Name}}" | grep -q "^${BUILDER_NAME}\$"; then
     echo "Using existing builder instance ${BUILDER_NAME}"
     docker buildx use "${BUILDER_NAME}"
   else
@@ -315,18 +277,36 @@ function build_image() {
   fi
 
   if [[ "${is_dev_container}" == "true" ]]; then
-    # Use devcontainer CLI instead to build image. This uses buildx internally already.
+    # Use devcontainer CLI instead to build image.
+    # This uses buildx internally but supports fewer, and different, arguments.
+    local tag
+    for tag in "${TAGS[@]}"; do
+      extra_args+=( "--image-name" "${full_image_name_without_colon_tag}:${tag}" )
+    done
     export DEV_CONTAINER_VERSION="${VERSION}"
-    devcontainer build \
+    export REVISION
+    local cmd=( \
+      devcontainer build \
       "${extra_args[@]}" \
-      --image-name "${full_image_name}" "${build_folder}"
+      "${build_folder}" \
+    )
+    print "Building ${IMAGE_NAME} using command ${cmd[*]}"
+    "${cmd[@]}"
   else
-    docker buildx build \
+    local tag
+    for tag in "${TAGS[@]}"; do
+      extra_args+=( "--tag" "${full_image_name_without_colon_tag}:${tag}" )
+    done
+    local cmd=( \
+      docker buildx build \
       "${extra_args[@]}" \
       --pull \
-      --build-arg revision="${CIRCLE_BUILD_NUM:-dev}" \
+      --build-arg revision="${REVISION}" \
       --build-arg version="${VERSION}" \
-      --tag "${full_image_name}" "${build_folder}"
+      "${build_folder}" \
+    )
+    print "Building ${IMAGE_NAME} using command ${cmd[*]}"
+    "${cmd[@]}"
   fi
   echo "Success"
 }
@@ -334,7 +314,6 @@ function build_image() {
 function main() {
   parse_arguments "$@"
   validate
-
   prepare_build_context
   build_image
 }
