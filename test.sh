@@ -8,11 +8,13 @@ set -euo pipefail
 
 USAGE="""
 Usage:
-  test.sh <full_image_name>
+  test.sh [-r <revision>] <full_image_name>
   test.sh -h
 
 Options:
-  -h Display the help.
+  -h                      Display the help.
+  -r <revision>           The value of the 'revision' LABEL expected.
+                          Defaults to 'dev'.
 """
 
 function print() {
@@ -22,14 +24,8 @@ function print() {
   echo "#----------------------------------------------------------------------"
 }
 
-function usage() {
-  echo -e "${USAGE}" >&2
-  exit 1
-}
-
-function print_error_and_exit() {
-  print_error "$1"
-  exit 1
+function print_usage() {
+  echo -e "${USAGE}"
 }
 
 function print_error() {
@@ -37,44 +33,91 @@ function print_error() {
   printf "\e[0m" >&2
 }
 
-function print_error_and_usage() {
+function exit_with_error_and_usage() {
   print_error "$1"
-  usage
-}
-
-function help() {
-  echo -e "${USAGE}"
-  exit 0
+  print_usage >&2
+  exit 1
 }
 
 function parse_arguments() {
-  while getopts ":h" flag; do
+  IMAGE=''
+  REVISION='dev'
+  while getopts ":r:h" flag; do
     case "${flag}" in
     h)
-      help
+      print_usage
+      exit 0
+      ;;
+    r)
+      REVISION="${OPTARG}"
       ;;
     \?)
-      usage
+      exit_with_error_and_usage "Invalid option: -${OPTARG}"
       ;;
     :)
-      print_error_and_usage "Invalid option: ${OPTARG} requires an argument"
+      exit_with_error_and_usage "Invalid option: ${OPTARG} requires an argument"
       ;;
     esac
   done
-
-  IMAGE="$1"
-  if [[ -z "${IMAGE:-""}" ]]; then
-    print_error_and_usage "Full image name needs to be passed to be able to test"
+  # Remove processed options from $@
+  shift $((OPTIND - 1))
+  # Process remaining arguments as image names
+  if [[ $# -eq 0 ]]; then
+    exit_with_error_and_usage "Need the full image name to be passed after any options"
   fi
+  if [[ $# -ne 1 ]]; then
+    exit_with_error_and_usage "Need ONLY ONE full image name to be passed after any options"
+  fi
+  IMAGE="$1"
+  if [[ -z "${IMAGE}" ]]; then
+    exit_with_error_and_usage "Image name is empty"
+  fi
+}
+
+function test_image_labels() {
+  local image_name="$1"
+  local required_labels=(
+    "description"
+    "license"
+    "maintainer"
+    "name"
+    "revision"
+    "summary"
+    # "version"
+  )
+  # Inspect the image and extract the labels
+  local labelsJson
+  labelsJson=$(docker inspect --format '{{ json .Config.Labels }}' "${image_name}")
+  local exit_code=0
+  # Check that required labels are set and non-empty
+  local label_name
+  for label_name in "${required_labels[@]}"; do
+    if ! jq -e --arg key "${label_name}" '.[$key] and .[$key] != ""' <<< "${labelsJson}" > /dev/null; then
+      echo "ERROR: Label '${label_name}' is missing or empty in image '${image_name}'" >&2
+      exit_code=1
+    fi
+  done
+  # if REVISION is set, check that it matches the label
+  if [[ -n "${REVISION}" ]]; then
+    if ! jq -e --arg key "revision" --arg value "${REVISION}" '.[$key] == $value' <<< "${labelsJson}" > /dev/null; then
+      echo "ERROR: Label 'revision' is not set to '${REVISION}' in image '${image_name}'" >&2
+      exit_code=1
+    fi
+  fi
+  if [[ "${exit_code}" == 0 ]]; then
+    echo "INFO: All required labels are correctly set in image '${image_name}'"
+  fi
+  return "${exit_code}"
 }
 
 function test_image() {
   local image_name="$1"
   local test_command="$2"
+  # shellcheck disable=SC2034
   local default_args=()
   local -n extra_args="${3:-default_args}"
 
-  if docker run --rm "${extra_args[@]}" "${image_name}" bash -c "set -e; ${test_command}"; then
+  if docker run --rm "${extra_args[@]}" "${image_name}" bash -c "set -e; ${test_command}" && test_image_labels "${image_name}" ; then
     echo "  PASSED"
   else
     local exit_code="$?"
@@ -153,7 +196,6 @@ function test_sql_server() {
     sql_tcp_provider_error='TCP Provider: Error code 0x68' \
     server_container_name="sql-server" \
     sql_db_scripts_host_path \
-    sql_db_script_container_filepath \
     sql_db_script_file \
     operational_output \
     connectivity_output \
@@ -337,7 +379,7 @@ function main() {
     test_image "${IMAGE}" "sudo -V" docker_args
     ;;
   *)
-    print_error_and_exit "No tests for image: ${IMAGE}"
+    exit_with_error_and_usage "No tests for image: ${IMAGE}"
     ;;
   esac
 }

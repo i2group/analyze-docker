@@ -4,15 +4,21 @@
 #
 # SPDX short identifier: MIT
 
+# Dynamic labels passed at build time into global-scope
+# revision = CI build number or 'dev' for local builds
+ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
 ARG SQLSERVER_VERSION=2022
 FROM "mcr.microsoft.com/mssql/rhel/server:${SQLSERVER_VERSION}-latest"
 
-ARG SQLSERVER_VERSION=2022
+# Bring global-scope args into the build stage
+ARG revision
+ARG version
+ARG SQLSERVER_VERSION
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# Dynamic labels
-ARG revision
 
 LABEL name="Microsoft SQL Server" \
   maintainer="i2 Group" \

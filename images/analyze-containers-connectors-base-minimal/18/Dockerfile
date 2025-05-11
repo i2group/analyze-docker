@@ -4,15 +4,22 @@
 #
 # SPDX short identifier: MIT
 
+# Dynamic labels passed at build time into global-scope
+# revision = CI build number or 'dev' for local builds
+ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
 FROM registry.access.redhat.com/ubi9/nodejs-18-minimal
 
-# Dynamic labels
+# Bring global-scope args into the build stage
 ARG revision
+ARG version
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 LABEL name="Analyze Containers Connectors Base" \
-  version="18" \
+  version="${version}" \
   revision="${revision}" \
   maintainer="i2 Group" \
   summary="Image for i2 Analyze Connectors with NodeJS and Red Hat's UBI minimal." \

@@ -3,23 +3,30 @@
 # © N.Harris Computer Corporation (2022-2024)
 #
 # SPDX short identifier: MIT
-#
+
+# Dynamic labels passed at build time into global-scope
+# revision = CI build number or 'dev' for local builds
+ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
 # Inspired by: https://github.com/31z4/zookeeper-docker
+ARG ZK_VERSION="3.6.4"
 
 FROM eclipse-temurin:11-ubi9-minimal
 
-# Dynamic labels
+# Bring global-scope args into the build stage
 ARG revision
+ARG version
+ARG ZK_VERSION
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-ARG ZK_VERSION="3.6.4"
 
 LABEL name="Apache ZooKeeper" \
   maintainer="i2 Group" \
   version="${ZK_VERSION}" \
   revision="${revision}" \
-  summary="Apache ZooKeeper image based on Red Hat's UBI." \
+  summary="Apache ZooKeeper image based on Red Hat's UBI with Java 11." \
   description="Apache ZooKeeper is a software project of the Apache Software Foundation, \
   providing an open source distributed configuration service, synchronization service, \
   and naming registry for large distributed systems." \

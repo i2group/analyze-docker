@@ -10,17 +10,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 USAGE="""
 Usage:
-  build.sh -i <image_name> -v <version> [-t <tag>]... [-p] [-m] [-n]
+  build.sh -i <image_name> -v <version> [-r <revision>] [-t <tag>]... [-p] [-m] [-n]
   build.sh -h
 
 Options:
   -i <image_name>         The image name.
   -v <version>            The image version.
+  -r <revision>           The value of the 'revision' ARG to pass in.
+                          Defaults to 'dev'.
   -t <tag>                (Optional) tag to push.
                           Can be passed in multiple times to set multiple tags.
                           Defaults to '<version>'.
-  -r <revision>           The value of the 'revision' ARG to pass in.
-                          Defaults to 'dev'.
   -p                      Will push the images to the registry.
   -m                      Builds multi-arch images.
   -n                      Build without cache

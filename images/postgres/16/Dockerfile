@@ -3,16 +3,25 @@
 # © N.Harris Computer Corporation (2022-2024)
 #
 # SPDX short identifier: MIT
-#
-# Inspired by: https://github.com/docker-library/postgres and https://github.com/postgis/docker-postgis
-# hadolint ignore=DL3049
-FROM postgres:16-bookworm
+
+# Dynamic labels passed at build time into global-scope
+# revision = CI build number or 'dev' for local builds
+ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
 
 ARG POSTGRES_VERSION=16
 ARG POSTGIS_VERSION=3
 
-# Dynamic labels
+# Inspired by: https://github.com/docker-library/postgres and https://github.com/postgis/docker-postgis
+# hadolint ignore=DL3049
+FROM postgres:${POSTGRES_VERSION}-bookworm
+
+# Bring global-scope args into the build stage
 ARG revision
+ARG version
+ARG POSTGRES_VERSION
+ARG POSTGIS_VERSION
 
 USER root
 

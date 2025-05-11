@@ -6,13 +6,17 @@
 #
 # Inspired by: https://github.com/apache/solr-docker
 
-# Dynamic labels passed at build time
+# Dynamic labels passed at build time into global-scope
 # revision = CI build number or 'dev' for local builds
 ARG revision
 # version = image version = name of the directory this Dockerfile is in
 ARG version
 
 FROM i2group/i2eng-analyze-containers-base:ubi-jdk17-${revision}
+
+# Bring global-scope args into the build stage
+ARG revision
+ARG version
 
 ARG SOLR_VERSION="9.4.1"
 # empty for the full distribution, "-slim" for the slim distribution

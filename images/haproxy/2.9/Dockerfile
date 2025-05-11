@@ -4,15 +4,24 @@
 #
 # SPDX short identifier: MIT
 
-FROM haproxy:2.9
-
-# Dynamic labels
+# Dynamic labels passed at build time into global-scope
+# revision = CI build number or 'dev' for local builds
 ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
+ARG HAPROXY_VERSION=2.9
+FROM haproxy:${HAPROXY_VERSION}
+
+# Bring global-scope args into the build stage
+ARG revision
+ARG version
+ARG HAPROXY_VERSION
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 LABEL name="HA Proxy" \
-  version="ubi" \
+  version="${HAPROXY_VERSION}" \
   revision="${revision}" \
   maintainer="i2 Group" \
   summary="HA Proxy image." \

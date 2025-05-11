@@ -4,6 +4,12 @@
 #
 # SPDX short identifier: MIT
 
+# Dynamic labels passed at build time into global-scope
+# revision = CI build number or 'dev' for local builds
+ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
 # Stage 1: Build xmlstarlet from source
 FROM registry.access.redhat.com/ubi8/ubi as builder
 
@@ -32,6 +38,18 @@ RUN wget --progress=dot:giga "https://sourceforge.net/projects/xmlstar/files/xml
 
 # Stage 2: Create the final image
 FROM eclipse-temurin:8-ubi9-minimal
+
+# Bring global-scope args into the build stage
+ARG revision
+ARG version
+
+LABEL name="Analyze Containers Base" \
+  version="${version}" \
+  revision="${revision}" \
+  maintainer="i2 Group" \
+  summary="Image for Analyze Containers deployment with OpenJDK 8 and Red Hat's UBI minimal." \
+  description="This image contains OpenJDK 8 Eclipse Temurin runtime and Red Hat's UBI as the base OS." \
+  license="MIT"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 

@@ -4,12 +4,19 @@
 #
 # SPDX short identifier: MIT
 
+# Dynamic labels passed at build time into global-scope
+# revision = CI build number or 'dev' for local builds
+ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
 ARG GRAFANA_VERSION=10.2.2
 FROM "grafana/grafana-enterprise:${GRAFANA_VERSION}"
 
-# Dynamic labels
+# Bring global-scope args into the build stage
 ARG revision
-ARG GRAFANA_VERSION=10.2.2
+ARG version
+ARG GRAFANA_VERSION
 
 LABEL name="Grafana" \
   maintainer="i2 Group" \

@@ -4,7 +4,7 @@
 #
 # SPDX short identifier: MIT
 
-# Dynamic labels passed at build time
+# Dynamic labels passed at build time into global-scope
 # revision = CI build number or 'dev' for local builds
 ARG revision
 # version = image version = name of the directory this Dockerfile is in
@@ -22,6 +22,10 @@ RUN cd /opt/app-root/src/connector_template && npm prune --production
 
 # Use a minimal base image
 FROM "${NODEJS_MINIMAL_BASE_IMAGE}:${NODEJS_VERSION}-${revision}"
+
+# Bring global-scope args into the build stage
+ARG revision
+ARG version
 
 LABEL name="Connector Designer Connector Base" \
   version="${version}" \

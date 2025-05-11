@@ -3,7 +3,13 @@
 # © N.Harris Computer Corporation (2022-2024)
 #
 # SPDX short identifier: MIT
-#
+
+# Dynamic labels passed at build time into global-scope
+# revision = CI build number or 'dev' for local builds
+ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
 # Inspired by: https://github.com/prometheus/prometheus
 # hadolint ignore=DL3049
 FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
@@ -34,8 +40,9 @@ RUN ARCH=$(uname -m) \
 
 FROM registry.access.redhat.com/ubi9/ubi
 
-# Dynamic labels
+# Bring global-scope args into the build stage
 ARG revision
+ARG version
 
 LABEL name="Prometheus" \
   maintainer="i2 Group" \

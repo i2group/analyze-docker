@@ -3,7 +3,13 @@
 # © N.Harris Computer Corporation (2022-2024)
 #
 # SPDX short identifier: MIT
-#
+
+# Dynamic labels passed at build time into global-scope
+# revision = CI build number or 'dev' for local builds
+ARG revision
+# version = image version = name of the directory this Dockerfile is in
+ARG version
+
 # Inspired by: https://github.com/OpenLiberty/ci.docker
 # Original copyright:
 ## Copyright 2022-2024 IBM Corporation and others
@@ -12,11 +18,12 @@
 
 FROM icr.io/appcafe/open-liberty:full-java17-openj9-ubi
 
-# Dynamic labels
+# Bring global-scope args into the build stage
 ARG revision
+ARG version
 
 LABEL maintainer="i2 Group" \
-  version="ubi" \
+  version="${version}" \
   name="Open Liberty" \
   summary="Image for Open Liberty with OpenJ9 JDK 17 and Red Hat's UBI" \
   revision="${revision}" \

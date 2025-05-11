@@ -6,7 +6,7 @@
 # 
 # Inspired by: https://github.com/microsoft/vscode-dev-containers/blob/main/containers/debian/.devcontainer/base.Dockerfile
 
-# Dynamic labels passed at build time
+# Dynamic labels passed at build time into global-scope
 # revision = CI build number or 'dev' for local builds
 ARG revision
 # version = image version = name of the directory this Dockerfile is in
@@ -15,6 +15,10 @@ ARG version
 FROM i2group/i2eng-analyze-containers-base:ubi-jdk17-${revision} AS ac-base
 
 FROM eclipse-temurin:17-ubi9-minimal
+
+# Bring global-scope args into the build stage
+ARG revision
+ARG version
 
 # [Option] Upgrade OS packages to their latest versions
 ARG UPGRADE_PACKAGES="true"
