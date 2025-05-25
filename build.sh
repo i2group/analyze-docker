@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 USAGE="""
 Usage:
-  build.sh -i <image_name> -v <version> [-r <revision>] [-t <tag>]... [-p] [-m] [-n]
+  build.sh -i <image_name> -v <version> [-r <revision>] [-t <tag>]... [-p] [-m] [-n] [-e]
   build.sh -h
 
 Options:
@@ -20,10 +20,12 @@ Options:
                           Defaults to 'dev'.
   -t <tag>                (Optional) tag to push.
                           Can be passed in multiple times to set multiple tags.
-                          Defaults to '<version>'.
+                          Defaults to '<version>-<revision>'.
   -p                      Will push the images to the registry.
   -m                      Builds multi-arch images.
   -n                      Build without cache
+  -e                      Use existing base images where possible; turns off --pull.
+                          Defaults to '--pull'ing the base image(s), except for dev containers.
   -h                      Display the help.
 
 Summary:
@@ -51,10 +53,14 @@ function help() {
 }
 
 function parse_arguments() {
+  NO_CACHE='false'
+  MULTI_ARCH_FLAG='false'
+  PUSH_FLAG='false'
   TAGS=()
-  REVISION=''
-  # cspell:ignore pmnh
-  while getopts ":i:v:r:t:pmnh" flag; do
+  REVISION='dev'
+  NO_PULL_USE_EXISTING='false'
+  # cspell:ignore epmnh
+  while getopts ':i:v:r:t:epmnh' flag; do
     case "${flag}" in
     i)
       IMAGE_NAME="${OPTARG}"
@@ -68,14 +74,17 @@ function parse_arguments() {
     t)
       TAGS+=("${OPTARG}")
       ;;
+    e)
+      NO_PULL_USE_EXISTING='true'
+      ;;
     p)
-      PUSH_FLAG="true"
+      PUSH_FLAG='true'
       ;;
     m)
-      MULTI_ARCH_FLAG="true"
+      MULTI_ARCH_FLAG='true'
       ;;
     n)
-      NO_CACHE="true"
+      NO_CACHE='true'
       ;;
     h)
       help
@@ -103,15 +112,12 @@ function parse_arguments() {
     print_error_and_usage "Invalid revision: '${VERSION}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
   fi
 
-  if [[ -z "${REVISION:-}" ]]; then
-    REVISION="dev"
-  fi
   if [[ ! "${REVISION}" =~ ^[-_a-z.A-Z0-9]+$ ]]; then
     print_error_and_usage "Invalid revision: '${REVISION}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
   fi
 
   if [[ "${#TAGS[@]}" -eq 0 ]]; then
-    TAGS=("${VERSION}")
+    TAGS=("${VERSION}-${REVISION}")
   fi
   local tag
   for tag in "${TAGS[@]}"; do
@@ -119,18 +125,6 @@ function parse_arguments() {
       print_error_and_usage "Invalid tag: '${tag}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
     fi
   done
-
-  if [[ -z "${PUSH_FLAG:-}" ]]; then
-    PUSH_FLAG="false"
-  fi
-
-  if [[ -z "${MULTI_ARCH_FLAG:-}" ]]; then
-    MULTI_ARCH_FLAG="false"
-  fi
-
-  if [[ -z "${NO_CACHE:-}" ]]; then
-    NO_CACHE="false"
-  fi
 
   IMAGE_REPO="i2group"
   IMAGE_PREFIX="i2eng"
@@ -163,12 +157,6 @@ function download_maven_artifact() {
       -DoutputDirectory="${output_directory}" \
       -Dmdep.stripVersion=true
   done
-}
-
-function download_connector_package() {
-  local build_folder="$1"
-  # For now connectors only support one version given by the i2connectors.json file = major supported version
-  "${SCRIPT_DIR}/internal/scripts/package-shared-connectors/download-and-extract-connectors" -i "${IMAGE_NAME}"
 }
 
 function copy_cert_tools_and_environment_scripts() {
@@ -283,6 +271,7 @@ function build_image() {
     for tag in "${TAGS[@]}"; do
       extra_args+=( "--image-name" "${full_image_name_without_colon_tag}:${tag}" )
     done
+    # devcontainer build doesn't support --pull or --no-cache
     export DEV_CONTAINER_VERSION="${VERSION}"
     export REVISION
     local cmd=( \
@@ -297,10 +286,12 @@ function build_image() {
     for tag in "${TAGS[@]}"; do
       extra_args+=( "--tag" "${full_image_name_without_colon_tag}:${tag}" )
     done
+    if [[ "${NO_PULL_USE_EXISTING}" == "false" ]]; then
+      extra_args+=("--pull=true")
+    fi
     local cmd=( \
       docker buildx build \
       "${extra_args[@]}" \
-      --pull \
       --build-arg revision="${REVISION}" \
       --build-arg version="${VERSION}" \
       "${build_folder}" \

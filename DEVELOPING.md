@@ -115,6 +115,6 @@ To make a change to Solr image in version 8.11, follow the steps:
   If you added a new dependency ensure to add it to the test in `test.sh`.
 1. Go back to the top-level folder (the folder containing this document).
 1. Run `./build.sh -i solr -v 8.11` to build your image locally.
-  At the end you should see the image `i2group/i2eng-solr:8.11` created.
-1. Run `./test.sh i2group/i2eng-solr:8.11` to ensure it starts and is correctly configured.
+  At the end you should see the image `i2group/i2eng-solr:8.11-dev` created.
+1. Run `./test.sh i2group/i2eng-solr:8.11-dev` to ensure it starts and is correctly configured.
 1. Submit a Pull Request
