@@ -284,7 +284,6 @@ function main() {
       test_cmd+="check-jsonschema --version; \
       gh version; \
       python --version; \
-      jf --version; \
       npm -v; \
       node -v;"
     fi

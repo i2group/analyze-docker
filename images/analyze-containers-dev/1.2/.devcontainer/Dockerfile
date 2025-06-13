@@ -99,8 +99,6 @@ RUN microdnf update -y \
   && pip3 install --no-cache-dir \
     check-jsonschema \
     s3cmd \
-  && curl -fL https://install-cli.jfrog.io | sh \
-  && chmod 755 /usr/local/bin/jf \
   && mkdir -p "/home/${USERNAME}/.docker" \
   && chown -R "${USERNAME}" "/home/${USERNAME}"
 
