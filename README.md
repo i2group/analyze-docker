@@ -50,19 +50,8 @@ E.g. `8.11-234`
 
 The tags with suffix `-main` are currently in development and not supported for production use.
 
-## Image Updates
 
-To create a new version of a Docker image (e.g., Solr):
-
-1. **Compare versions**: Find the 'inspired by' link in the Docker image's [README.md](https://github.com/i2group/analyze-docker-internal/blob/ba94ae3eaa0bd1e8b75e5606f5751d9684777b32/images/solr/README.md?plain=1#L16). Open the linked public GitHub repository and examine the Dockerfile history between the current version and the target version. Note the changes and apply them to the Dockerfile(s) in this repository.
-
-2. **Submit changes**: Create a PR branch with your changes (automatically tested by CircleCI). Ensure the build passes, then get the code reviewed and merge into the `main` branch.
-
-3. **Internal testing**: Committing to the main branch triggers a Docker image build with a unique tag on Docker Hub (e.g., `i2group/i2eng-solr:9.9-57733`). Internal developers should test this tag for compatibility with all tooling (ADT).
-
-4. **Production release**: Once developers confirm the image works correctly, add the `backport cd` label to the merged PR (found in closed PRs). This backports changes to the `cd` branch, which builds and tests the new Docker image with production tags (`<major version>`, `<major version.minor version>`, and `latest`). The process also commits changes from this repository's `cd` branch to the public `analyze-docker` repository's `main` branch.
-
-## Image patch updates
+## Image Patch Updates
 
 There is a weekly scheduled build (Sun 00:00:00 UTC) which pulls latest patches of all dependencies for the images.
 
