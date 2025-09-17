@@ -17,7 +17,9 @@ The image is inspired by the official [solr](https://hub.docker.com/_/solr) Dock
 
 ## Supported tags
 
-- [`9`, `9.7`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.7/Dockerfile)
+- [`9`, `9.9`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.9/Dockerfile)
+- [`9.8`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.8/Dockerfile)
+- [`9.7`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.7/Dockerfile)
 - [`9.6`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.6/Dockerfile)
 - [`9.5`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.5/Dockerfile)
 - [`9.4`](https://github.com/i2group/analyze-docker/blob/main/images/solr/9.4/Dockerfile)

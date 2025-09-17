@@ -11,7 +11,7 @@ ARG revision
 ARG version
 
 # Inspired by: https://github.com/31z4/zookeeper-docker
-ARG ZK_VERSION="3.9.3"
+ARG ZK_VERSION="3.9.4"
 
 FROM i2group/i2eng-analyze-containers-base:ubi-jdk17-${revision}
 
