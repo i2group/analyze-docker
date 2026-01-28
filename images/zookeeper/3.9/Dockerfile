@@ -11,14 +11,80 @@ ARG revision
 ARG version
 
 # Inspired by: https://github.com/31z4/zookeeper-docker
+# but then re-arranged to multi-stage build and UBI base image
 ARG ZK_VERSION="3.9.4"
+ARG GPG_KEY=3F7A1D16FA4217B1DC75E1C9FFE35B7F15DFA1BA
 
+
+
+# Stage 1: Download everything we need
+# Use ubuntu, because we can't untar on ubi reliably on arm64.
+# (on arm64, tar reports a lot of "Cannot open: Invalid argument" errors)
+FROM ubuntu:24.04 as downloader-and-unpacker
+
+# Bring global-scope args into the build stage, and add more
+ARG GPG_KEY
+ARG ZK_VERSION
+ARG SHORT_DISTRO_NAME=zookeeper-${ZK_VERSION}
+ARG DISTRO_NAME=apache-zookeeper-${ZK_VERSION}-bin
+
+# Dependencies for downloading and verifying Zookeeper.
+# Subset of those used in the official Zookeeper image.
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+      ca-certificates \
+      dirmngr \
+      gnupg \
+      wget \
+    && \
+    rm -rf /var/lib/apt/lists/*
+
+# Download Apache Zookeeper, verify its PGP signature, untar and clean up
+# Code from official image's Dockerfile...
+# ... truncated after the 'tar' step
+# ... with wget told --progress=dot:mega --tries=3 --timeout=10 --waitretry=10 --retry-connrefused for robustness.
+RUN set -eux; \
+    ddist() { \
+        local f="$1"; shift; \
+        local distFile="$1"; shift; \
+        local success=; \
+        local distUrl=; \
+        for distUrl in \
+            'https://www.apache.org/dyn/closer.cgi?action=download&filename=' \
+            https://www-us.apache.org/dist/ \
+            https://www.apache.org/dist/ \
+            https://archive.apache.org/dist/ \
+        ; do \
+            if wget --progress=dot:mega --tries=3 --timeout=10 --waitretry=10 --retry-connrefused -O "$f" "$distUrl$distFile" && [ -s "$f" ]; then \
+                success=1; \
+                break; \
+            fi; \
+        done; \
+        [ -n "$success" ]; \
+    }; \
+    ddist "$DISTRO_NAME.tar.gz" "zookeeper/$SHORT_DISTRO_NAME/$DISTRO_NAME.tar.gz"; \
+    ddist "$DISTRO_NAME.tar.gz.asc" "zookeeper/$SHORT_DISTRO_NAME/$DISTRO_NAME.tar.gz.asc"; \
+    export GNUPGHOME="$(mktemp -d)"; \
+    gpg --keyserver hkps://keyserver.pgp.com --recv-key "$GPG_KEY" || \
+    gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys "$GPG_KEY" || \
+    gpg --keyserver hkps://pgp.mit.edu --recv-keys "$GPG_KEY"; \
+    gpg --batch --verify "$DISTRO_NAME.tar.gz.asc" "$DISTRO_NAME.tar.gz"; \
+    tar -zxf "$DISTRO_NAME.tar.gz"; \
+    rm -rf "$GNUPGHOME" "$DISTRO_NAME.tar.gz" "$DISTRO_NAME.tar.gz.asc"; \
+    ls -al "/$DISTRO_NAME"
+
+
+
+# Stage 2: Create the final image
 FROM i2group/i2eng-analyze-containers-base:ubi-jdk17-${revision}
 
-# Bring global-scope args into the build stage
+# Bring global-scope args into the build stage, and add more
 ARG revision
 ARG version
 ARG ZK_VERSION
+ARG DISTRO_NAME=apache-zookeeper-${ZK_VERSION}-bin
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 LABEL name="Apache ZooKeeper" \
   maintainer="i2 Group" \
@@ -30,6 +96,7 @@ LABEL name="Apache ZooKeeper" \
   and naming registry for large distributed systems." \
   license="MIT"
 
+# Code from official image's Dockerfile...
 ENV JAVA_HOME="/opt/java/openjdk" \
     PATH="/opt/java/openjdk/bin:$PATH" \
     ZOO_CONF_DIR=/conf \
@@ -45,63 +112,34 @@ ENV JAVA_HOME="/opt/java/openjdk" \
     ZOO_STANDALONE_ENABLED=true \
     ZOO_ADMINSERVER_ENABLED=true
 
-# Add a user with an explicit UID/GID and create necessary directories
+# nmap package is required to supply cli netcat (command nc), this is required
+# for zookeeper status checking.
 RUN set -eux; \
-    groupadd -r zookeeper --gid=1000; \
-    useradd -r -g zookeeper --uid=1000 zookeeper; \
-    mkdir -p "$ZOO_DATA_LOG_DIR" "$ZOO_DATA_DIR" "$ZOO_CONF_DIR" "$ZOO_LOG_DIR"; \
-    chown zookeeper:zookeeper "$ZOO_DATA_LOG_DIR" "$ZOO_DATA_DIR" "$ZOO_CONF_DIR" "$ZOO_LOG_DIR"
-
-# Gosu is part of the base image so we don't try to reinstall
-# Netcat is ncat which is part of nmap package
-# Install required packages
-RUN set -eux; \
-    microdnf -y update; \
-    microdnf install -y --setopt=install_weak_deps=0 \
-        ca-certificates \
-        dirmngr \
-        gnupg \
-        nmap \
-        wget; \
+    microdnf -y update && \
+    microdnf -y install --setopt=install_weak_deps=0 \
+      nmap \
+    && \
     microdnf clean all;
 
-ARG GPG_KEY=3F7A1D16FA4217B1DC75E1C9FFE35B7F15DFA1BA
-ARG SHORT_DISTRO_NAME=zookeeper-${ZK_VERSION}
-ARG DISTRO_NAME=apache-zookeeper-${ZK_VERSION}-bin
-
-# Download Apache Zookeeper, verify its PGP signature, untar and clean up
+# Add a user with an explicit UID/GID and create necessary directories
+# Install shadow-utils temporarily, use it, then remove it to keep image small
 RUN set -eux; \
-    ddist() { \
-        local f="$1"; shift; \
-        local distFile="$1"; shift; \
-        local success=; \
-        local distUrl=; \
-        for distUrl in \
-            'https://www.apache.org/dyn/closer.cgi?action=download&filename=' \
-            https://www-us.apache.org/dist/ \
-            https://www.apache.org/dist/ \
-            https://archive.apache.org/dist/ \
-        ; do \
-            if wget -q -O "$f" "$distUrl$distFile" && [ -s "$f" ]; then \
-                success=1; \
-                break; \
-            fi; \
-        done; \
-        [ -n "$success" ]; \
-    }; \
-    ddist "$DISTRO_NAME.tar.gz" "zookeeper/$SHORT_DISTRO_NAME/$DISTRO_NAME.tar.gz"; \
-    ddist "$DISTRO_NAME.tar.gz.asc" "zookeeper/$SHORT_DISTRO_NAME/$DISTRO_NAME.tar.gz.asc"; \
-    export GNUPGHOME="$(mktemp -d)"; \
-    gpg --keyserver hkps://keyserver.pgp.com --recv-key "$GPG_KEY" || \
-    gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys "$GPG_KEY" || \
-    gpg --keyserver hkps://pgp.mit.edu --recv-keys "$GPG_KEY"; \
-    gpg --batch --verify "$DISTRO_NAME.tar.gz.asc" "$DISTRO_NAME.tar.gz"; \
-    tar -zxf "$DISTRO_NAME.tar.gz"; \
+    microdnf -y install shadow-utils && \
+    groupadd -r zookeeper --gid=1000 && \
+    useradd -r -g zookeeper --uid=1000 zookeeper && \
+    mkdir -p "$ZOO_DATA_LOG_DIR" "$ZOO_DATA_DIR" "$ZOO_CONF_DIR" "$ZOO_LOG_DIR" && \
+    chown zookeeper:zookeeper "$ZOO_DATA_LOG_DIR" "$ZOO_DATA_DIR" "$ZOO_CONF_DIR" "$ZOO_LOG_DIR" && \
+    microdnf -y remove shadow-utils && \
+    microdnf clean all
+
+# Copy Apache Zookeeper from the downloader-and-unpacker stage
+COPY --from=downloader-and-unpacker --chown=zookeeper:zookeeper "/$DISTRO_NAME" "/$DISTRO_NAME"
+
+# Code from official image's Dockerfile that didn't go into the downloader stage
+RUN \
     mv "$DISTRO_NAME/conf/"* "$ZOO_CONF_DIR"; \
-    rm -rf "$GNUPGHOME" "$DISTRO_NAME.tar.gz" "$DISTRO_NAME.tar.gz.asc"; \
-    chown -R zookeeper:zookeeper "/$DISTRO_NAME"; \
-    # Add symlink for easier access in SaaS
-    ln -s "/$DISTRO_NAME" /apache-zookeeper-bin;
+    ln -s "/$DISTRO_NAME" /apache-zookeeper-bin \
+    && ls -al /
 
 WORKDIR $DISTRO_NAME
 VOLUME ["$ZOO_DATA_DIR", "$ZOO_DATA_LOG_DIR", "$ZOO_LOG_DIR"]

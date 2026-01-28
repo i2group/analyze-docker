@@ -54,7 +54,7 @@ COPY semver_util.sh /usr/bin/semver_util.sh
 COPY library-scripts/*.sh /tmp/library-scripts/
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN microdnf update -y \
+RUN microdnf -y update \
   && /bin/bash /tmp/library-scripts/common-redhat.sh "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" \
   # Use Docker script from script library to set things up
   && /bin/bash /tmp/library-scripts/docker-redhat.sh "${ENABLE_NONROOT_DOCKER}" "/var/run/docker-host.sock" "/var/run/docker.sock" "${USERNAME}" \
@@ -78,18 +78,19 @@ RUN microdnf update -y \
   && dnf install -y session-manager-plugin.rpm \
   # Install deps
   && microdnf -y install --setopt=install_weak_deps=0 \
-  maven \
-  diffutils \
-  bc \
-  gh \
-  python3.12 \
-  python3.12-pip \
-  nodejs \
-  npm \
-  libxml2 \
-  libxslt \
+    maven \
+    diffutils \
+    bc \
+    gh \
+    python3.12 \
+    python3.12-pip \
+    nodejs \
+    npm \
+    libxml2 \
+    libxslt \
   # Clean up
   && microdnf clean all \
+  && dnf clean all \
   # Ensure symlinks are created for the correct version of Python
   && ln -sf /usr/bin/python3.12 /usr/bin/python3 \
   && ln -sf /usr/bin/python3.12 /usr/bin/python \

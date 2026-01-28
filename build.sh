@@ -254,14 +254,55 @@ function build_image() {
   print "Building ${IMAGE_NAME} from:"
   log_directory_contents "${build_folder}"
 
-  BUILDER_NAME="analyze-docker-${REVISION}"
+  # Decide builder driver
+  local builder_driver="docker-container"
+  if [[ "${NO_PULL_USE_EXISTING}" == "true" && "${MULTI_ARCH_FLAG}" != "true" && "${PUSH_FLAG}" != "true" ]]; then
+    builder_driver="docker" # local daemon to reuse local base images
+  fi
 
-  if docker buildx ls --format "{{.Name}}" | grep -q "^${BUILDER_NAME}\$"; then
-    echo "Using existing builder instance ${BUILDER_NAME}"
-    docker buildx use "${BUILDER_NAME}"
+  # Pick builder name
+  local BUILDER_NAME
+  if [[ "${builder_driver}" == "docker" ]]; then
+    # The docker driver uses the legacy local builder; typically named "default"
+    BUILDER_NAME="default"
   else
-    echo "Creating new builder instance ${BUILDER_NAME}"
-    docker buildx create --driver docker-container --use --name "${BUILDER_NAME}"
+    BUILDER_NAME="analyze-docker-${REVISION}"
+  fi
+
+  # Ensure/Select the builder
+  if [[ "${builder_driver}" == "docker" ]]; then
+    # Do not attempt to create additional docker driver instances; reuse existing
+    if docker buildx ls --format '{{.Name}}' | grep -qx "${BUILDER_NAME}"; then
+      echo "Using existing docker driver builder ${BUILDER_NAME}"
+      docker buildx use "${BUILDER_NAME}"
+    else
+      # Fallback: try to use default; if missing, try to create once
+      echo "Selecting docker driver builder ${BUILDER_NAME}"
+      if ! docker buildx use "${BUILDER_NAME}" >/dev/null 2>&1; then
+        echo "Default builder not present; creating docker driver builder ${BUILDER_NAME}"
+        docker buildx create --driver docker --use --name "${BUILDER_NAME}" || docker buildx use "${BUILDER_NAME}"
+      fi
+    fi
+  else
+    # Manage docker-container builders per revision
+    local existing_driver
+    existing_driver=""
+    if docker buildx ls --format '{{.Name}}' | grep -qx "${BUILDER_NAME}"; then
+      existing_driver=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | awk -F': ' '/^Driver:/ {print $2}' | head -n1)
+    fi
+    if [[ -n "${existing_driver}" ]]; then
+      echo "Using existing builder instance ${BUILDER_NAME} (${existing_driver})"
+      if [[ "${existing_driver}" != "${builder_driver}" ]]; then
+        echo "Recreating builder ${BUILDER_NAME} with driver ${builder_driver}"
+        docker buildx rm "${BUILDER_NAME}"
+        docker buildx create --driver "${builder_driver}" --use --name "${BUILDER_NAME}"
+      else
+        docker buildx use "${BUILDER_NAME}"
+      fi
+    else
+      echo "Creating new builder instance ${BUILDER_NAME} with driver ${builder_driver}"
+      docker buildx create --driver "${builder_driver}" --use --name "${BUILDER_NAME}"
+    fi
   fi
 
   if [[ "${is_dev_container}" == "true" ]]; then

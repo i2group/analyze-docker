@@ -10,19 +10,33 @@ ARG revision
 # version = image version = name of the directory this Dockerfile is in
 ARG version
 
+
+
+# Stage 1: Download everything we need
+# Use ubuntu, because we can't untar on ubi reliably on arm64.
+# (on arm64, tar reports a lot of "Cannot open: Invalid argument" errors)
+#
 # Inspired by: https://github.com/prometheus/prometheus
 # hadolint ignore=DL3049
-FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
+FROM ubuntu:24.04 as builder
 ARG PROMETHEUS_VERSION="v2.53.1"
 
 ENV PROMETHEUS_TAG="tags/${PROMETHEUS_VERSION}"
 ENV PROMETHEUS="https://api.github.com/repos/prometheus/prometheus/releases/${PROMETHEUS_TAG}"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN set -ex; \
-  microdnf -y update; \
-  microdnf -y install gzip jq tar; \
-  microdnf clean all
+
+# Dependencies for downloading and verifying Prometheus.
+# Subset of those used in the official Prometheus image.
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+      ca-certificates \
+      gzip \
+      jq \
+      curl \
+      tar \
+    && \
+    rm -rf /var/lib/apt/lists/*
 
 # The checksum file for the Prometheus project is "sha256sums.txt"
 ARG SUM_FILE="sha256sums.txt"
@@ -33,11 +47,14 @@ WORKDIR /prometheus
 # Download the checksum and binary tarball, check checksum and extract
 RUN ARCH=$(uname -m) \
   && if [[ "${ARCH}" == "aarch64" ]]; then TAR_NAME="linux-arm64.tar.gz"; else TAR_NAME="linux-amd64.tar.gz"; fi \
-  && curl -sSLf "$(curl -sSLf "${PROMETHEUS}" -o - | jq -r --arg sum_file "${SUM_FILE}" '.assets[] | select(.name|test($sum_file)) | .browser_download_url')" -o "${SUM_FILE}" \
-  && curl -sSLf -O "$(curl -sSLf "${PROMETHEUS}" -o - | jq -r --arg tar_name "${TAR_NAME}" '.assets[] | select(.name|test($tar_name)) | .browser_download_url')" \
+  && curl -fL --connect-timeout 10 --retry 3 --retry-delay 10 --retry-max-time 60 --progress-bar "$(curl -fL --connect-timeout 10 --retry 3 --retry-delay 10 --retry-max-time 60 --progress-bar "${PROMETHEUS}" -o - | jq -r --arg sum_file "${SUM_FILE}" '.assets[] | select(.name|test($sum_file)) | .browser_download_url')" -o "${SUM_FILE}" \
+  && curl -fL --connect-timeout 10 --retry 3 --retry-delay 10 --retry-max-time 60 --progress-bar -O "$(curl -fL --connect-timeout 10 --retry 3 --retry-delay 10 --retry-max-time 60 --progress-bar "${PROMETHEUS}" -o - | jq -r --arg tar_name "${TAR_NAME}" '.assets[] | select(.name|test($tar_name)) | .browser_download_url')" \
   && sha256sum --check --ignore-missing "${SUM_FILE}" \
   && tar --extract --gunzip --no-same-owner --strip-components=1 --directory /prometheus --file ./*.tar.gz
 
+
+
+# Stage 2: Create the final image
 FROM registry.access.redhat.com/ubi9/ubi
 
 # Bring global-scope args into the build stage

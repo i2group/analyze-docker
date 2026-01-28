@@ -50,7 +50,7 @@ RUN set -eux; \
   # Install Full-Text Search capability
   # Gets the RedHat OS version and uses it for the mssql package download
   RHEL_VERSION="$(rpm -q --queryformat '%{VERSION}' redhat-release | cut -d. -f1)"; \
-  curl -o /etc/yum.repos.d/mssql-server.repo "https://packages.microsoft.com/config/rhel/${RHEL_VERSION}/mssql-server-${SQLSERVER_VERSION}.repo"; \
+  curl -fL --connect-timeout 10 --retry 3 --retry-delay 10 --retry-max-time 60 --progress-bar -o /etc/yum.repos.d/mssql-server.repo "https://packages.microsoft.com/config/rhel/${RHEL_VERSION}/mssql-server-${SQLSERVER_VERSION}.repo"; \
   # ACCEPT_EULA=y to update mssql packages
   ACCEPT_EULA=Y dnf -y --exclude="${EXCLUDED_PACKAGES}" update; \
   dnf -y --nodocs install mssql-server-fts \

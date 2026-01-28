@@ -34,17 +34,21 @@ Additionally, `8.11` tag was pointing to version `8.11.2` and got updated to poi
 Example 2: Solr `8` tag currently points to version `8.11.3`, later a build publishes version `8.12.0` so the `8` tag gets updated to point to the new minor update `8.12.0`.
 Additionally, `8.11` tag points to version `8.11.2` and a new tag `8.12` got created to point to `8.12.0`.
 
+
 ### Latest
 
 The tag `latest` always points to the most recent release.
 
+
 ### Unique
 
-These tags are useful for deployments since they don't move aka. once they are pushed they forever point to the same Docker image SHA.
+These tags are useful for deployments since they don't move.
+i.e. once they are pushed they forever point to the same Docker image SHA.
 
 Naming convention: `<stable_name>-<build_number>`
 
 E.g. `8.11-234`
+
 
 ### Main (Dev only)
 
@@ -78,7 +82,7 @@ To read more about the available versions go to:
 
 ## User Feedback
 
-You can raise issues and questions about the i2 images [HERE](https://github.com/i2group/analyze-docker/issues).
+You can raise issues and questions about the i2 images [on GitHub](https://github.com/i2group/analyze-docker/issues).
 
 ## Related
 

@@ -118,3 +118,43 @@ To make a change to Solr image in version 8.11, follow the steps:
   At the end you should see the image `i2group/i2eng-solr:8.11-dev` created.
 1. Run `./test.sh i2group/i2eng-solr:8.11-dev` to ensure it starts and is correctly configured.
 1. Submit a Pull Request
+
+## Local builds using locally-built base images
+
+If you need to build the full image hierarchy locally and have downstream images reuse freshly built local bases (without pulling from a registry):
+
+* Use the `-e` flag with `build.sh` to prefer existing local base images (disables `--pull`).
+* Do not pass `-p` (push) or `-m` (multi-architecture) flags.
+This keeps builds single-architecture and uses the local Docker daemon so that
+`FROM` clauses can use locally built images.
+
+Example:
+
+```bash
+# Build a base image locally (single-arch, no push)
+./build.sh -i analyze-containers-base -v ubi-jdk17 -e
+
+# Build an image that depends on that base, reusing it locally
+./build.sh -i analyze-containers-dev -v 1.2 -e
+```
+
+## Local builds using official base images
+
+If you do NOT need to build modified versions of the base images,
+e.g. if you wish to simply work on a non-base image,
+use `docker pull` to obtain the official versions of the base image(s) required
+and use `docker tag` to re-tag the downloaded images to have a `-dev` suffix on their
+tags just as if they were built locally.
+
+The args to be passed to `build.sh` are the same as for the [full hierarchy use case](#local-builds-using-locally-built-base-images).
+
+Example:
+
+```bash
+# Pull official base image and re-tag as dev image.
+docker pull i2group/i2eng-analyze-containers-base:ubi-jdk17
+docker tag i2group/i2eng-analyze-containers-base:ubi-jdk17 i2group/i2eng-analyze-containers-base:ubi-jdk17-dev
+
+# Build an image that depends on that base
+./build.sh -i analyze-containers-dev -v 1.2 -e
+```
