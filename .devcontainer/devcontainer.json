@@ -27,7 +27,9 @@
   // to all the user's personal ~/.something files. This is useful for tools like Git
   // etc so that the dev container accesses the same configuration that the user is used to.
   // We need special handling of the .ssh directory, as it needs to be copied instead of linked.
-  "postCreateCommand": "( ( cd /userhome && find . -mindepth 1 -maxdepth 1 -name '.*' -print | sort | cut -c 3- ) | while IFS= read -r FILE; do ( cd && rm -rf \"${FILE}\" && ln -sf \"/userhome/${FILE}\" ); done && if [ -d /userhome/.ssh ]; then rm -rf ~/.ssh && cp -pr /userhome/.ssh ~; fi ) && ( cd .circleci/dynamic && npm install --omit=dev )",
+  "initializeCommand": "bash ./.devcontainer/bootstrap initialize",
+  "onCreateCommand": "bash ./.devcontainer/bootstrap onCreate",
+  "postStartCommand": "bash ./.devcontainer/bootstrap postStart",
 
   // Configure tool-specific properties.
   "customizations": {
@@ -51,7 +53,7 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=cached",
   "workspaceFolder": "${localWorkspaceFolder}",
   "mounts": [
-    "source=${localEnv:HOME},target=/userhome/,type=bind",
+    "source=${localEnv:HOME},target=/local_user/,type=bind",
     "source=/mnt,target=/mnt,type=bind",
     "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
   ]

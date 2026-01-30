@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+# i2, i2 Group, the i2 Group logo, and i2group.com are trademarks of N.Harris Computer Corporation.
+# © N.Harris Computer Corporation (2022-2025)
+#
+# Script called as part of the Visual Studio Code dev-container setup.
+# We know this script will only ever be run in a VSC terminal, so we can use colour escape sequences here.
+#
+# SPDX short identifier: MIT
+
+set -euo pipefail
+
+function run_task() {
+  local task="$1"
+  case "${task}" in
+  "initialize")
+    initialize
+    ;;
+  "onCreate")
+    on_create
+    ;;
+  "postStart")
+    post_start
+    ;;
+  *)
+    printf "\e[31mERROR: Unknown task: %s\e[0m\n" "${task}" >&2
+    exit 1
+    ;;
+  esac
+}
+
+# Returns a list of paths in the filesystem that are directly mounted into
+# the devcontainer, one per line.
+# $1 = Path to devcontainer.json to be read, relative to this script's location.
+function get_mounted_absolute_paths() {
+  local devcontainer_location="$1"
+  local devcontainer_json_path
+  devcontainer_json_path="$(dirname "$(realpath "$0")")/${devcontainer_location}"
+  if [[ ! -f "${devcontainer_json_path}" ]]; then
+    printf "\e[31mERROR: devcontainer.json file not found at expected location: %s\e[0m\n" "${devcontainer_json_path}" >&2
+    return 1
+  fi
+  # shellcheck disable=SC2016
+  ( grep -o 'source=/[^,"]\+,target=' "${devcontainer_json_path}" || true ) \
+    | \
+    sed 's/source=//;s/,target=//'
+}
+
+# Checks that the native filesystem contains everything that the dev-container is about to mount.
+#
+# Things that we're about to try to mount MUST exist, otherwise docker will either fail, or try
+# to create them as root-owned folders, neither of which is desirable.
+# This can happen if there's a mismatch between what the author of the dev-container expected to be present
+# and the native environment it's being launched from.
+function verify_required_native_paths_exist() {
+  local absolute_paths_to_be_mounted
+  absolute_paths_to_be_mounted=$(get_mounted_absolute_paths devcontainer.json | sort -u | ( grep -v '^$' || true ))
+  local absolute_path_to_be_mounted
+  while IFS= read -r absolute_path_to_be_mounted; do
+    if [[ ! -e "${absolute_path_to_be_mounted}" ]]; then
+      printf "\e[31mERROR: Native path %s does not exist but devcontainer is configured to mount it.\e[0m\n" "${absolute_path_to_be_mounted}" >&2
+      return 1
+    fi
+    echo "Dev-container will mount native path: ${absolute_path_to_be_mounted}"
+  done <<< "${absolute_paths_to_be_mounted}"
+  echo "All native paths needed by the dev-container are present."
+  return 0
+}
+
+# Make VSC dev-container user ~/.* files that point back to native user's versions.
+# This allows things like .gitconfig, .bashrc, .config/Code/User/settings.json, etc to be shared
+# between the native user and the dev-container user ... but requires that the entire native user's home
+# directory is mounted into the dev-container and the uid/gid matches perfectly.
+function map_native_user_settings_into_container_user() {
+  local native_user_dir="$1"
+  (
+    cd "${native_user_dir}" || exit 1
+    # We do NOT copy .docker because that depends on docker-credential-desktop.exe
+    # which is not available in the container.
+    # We omit the .ssh folder as we make a deep copy of that later.
+    # We omit the others as they're intended to be local to the OS they're on.
+    find . \
+      -mindepth 1 \
+      -maxdepth 1 \
+      -name '.*' \
+      '!' -name '.docker' \
+      '!' -name '.bash_' \
+      '!' -name '.local' \
+      '!' -name '.ssh' \
+      '!' -name '.vscode-*' \
+      '!' -name '.sudo_as_admin_successful' \
+      -printf '%P\n' \
+      | sort
+  ) | (
+    while IFS= read -r dotfilename
+    do
+      rm -rf ~/"${dotfilename}"
+      (
+        set -x
+        ln -sf "${native_user_dir}/${dotfilename}" ~/"${dotfilename}"
+      )
+    done
+  )
+  # SSH won't accept a symlink'ed .ssh folder, so we copy it.
+  if [[ -d "${native_user_dir}/.ssh" ]]; then
+    rm -rf ~/.ssh
+    (
+      homedir=$(cd ~ && pwd)
+      set -x
+      cp -pr "${native_user_dir}/.ssh" "${homedir}/.ssh"
+    )
+  fi
+}
+
+# Called as the dev-container's initializeCommand
+# This runs as the local native user before the container is created.
+function initialize() {
+  if [[ -z "${HOME:-}" ]]; then
+    printf "\e[31mERROR: HOME environment variable is not set\e[0m\n" >&2
+    exit 1
+  fi
+  verify_required_native_paths_exist
+}
+
+# Called as the dev-container's onCreateCommand
+function on_create() {
+  : # no-op
+}
+
+# Called as the dev-container's postStartCommand
+# This runs inside the container after it has started.
+function post_start() {
+  # Only map native user settings if we can and it is safe to do so.
+  local native_user_dir='/local_user'
+  if [[ ! -d "${native_user_dir}" ]]; then
+    printf "\e[33mINFO: Did not map all native user settings into devcontainer user. To enable, mount \${localEnv:HOME} to %s in the devcontainer.\e[0m\n" "${native_user_dir}" >&2
+  else
+    local native_user_uid_colon_gid
+    # shellcheck disable=SC2012 # ls is the same on mac and linux, stat is not.
+    native_user_uid_colon_gid=$(ls -ldn "${native_user_dir}" | awk '{print $3":"$4}')
+    local container_user_uid_colon_gid
+    # shellcheck disable=SC2012
+    container_user_uid_colon_gid=$(ls -ldn ~ | awk '{print $3":"$4}')
+    if [[ "${native_user_uid_colon_gid}" != "${container_user_uid_colon_gid}" ]]; then
+      # Visual Studio Code is meant to ensure that the dev-container user always has the same UID and GID as
+      # the native user but it's allegedly not 100% reliable, especially for mac users.
+      printf "\e[33mWARNING: Not mapping user settings because %s has uid:gid=%s and %s has uid:gid=%s\e[0m\n" \
+        "${native_user_dir}" "${native_user_uid_colon_gid}" ~ "${container_user_uid_colon_gid}" >&2
+    else
+      echo "Found ${native_user_dir} with matching uid:gid=${native_user_uid_colon_gid}, mapping user settings..."
+      map_native_user_settings_into_container_user "${native_user_dir}"
+      echo "Mapped native user settings into container user."
+      echo "If you add more user settings to the native user's home directory, rebuild the devcontainer to get them included."
+    fi
+  fi
+  if [[ -d .circleci/dynamic ]]; then
+    echo "Installing CircleCI dynamic config dependencies..."
+    (
+      set -x
+      cd .circleci/dynamic && npm install --omit=dev
+    )
+  fi
+  echo "Dev Container is ready"
+}
+
+run_task "$1"
