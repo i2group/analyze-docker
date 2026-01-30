@@ -10,12 +10,14 @@
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers-contrib/features/apt-get-packages:1": {
+    "ghcr.io/devcontainers-extra/features/apt-get-packages:1": {
       "packages": "gnupg2"
     },
     "ghcr.io/dhoeric/features/hadolint:1": {},
     "ghcr.io/CodeMan99/features/circleci-cli:1": {},
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "moby": "false"
+    }
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
@@ -49,8 +51,9 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=cached",
   "workspaceFolder": "${localWorkspaceFolder}",
   "mounts": [
+    "source=${localEnv:HOME},target=/userhome/,type=bind",
     "source=/mnt,target=/mnt,type=bind",
-    "source=${localEnv:HOME},target=/userhome/,type=bind"
+    "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
   ]
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
