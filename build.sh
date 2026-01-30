@@ -225,6 +225,26 @@ function log_directory_contents() {
   )
 }
 
+function ensure_using_right_builder_and_driver() {
+  local builder_name="$1"
+  local builder_driver="$2"
+  local existing_driver=""
+  if docker buildx ls --format '{{.Name}}' | grep -Fqx "${builder_name}"; then
+    existing_driver=$(docker buildx inspect "${builder_name}" 2>/dev/null | awk -F': ' '/^Driver:/ {print $2}' | sed -e 's,^[[:space:]]*,,g' -e 's,[[:space:]]*$,,g' | head -n1)
+  fi
+  if [[ -n "${existing_driver}" ]]; then
+    if [[ "${existing_driver}" == "${builder_driver}" ]]; then
+      echo "Using existing builder instance ${builder_name} with driver ${existing_driver}"
+      docker buildx use "${builder_name}"
+      return
+    fi
+    echo "Existing builder ${builder_name} has driver ${existing_driver}; we want ${builder_driver}. Recreating."
+    docker buildx rm "${builder_name}"
+  fi
+  echo "Creating builder ${builder_name} with driver ${builder_driver}"
+  docker buildx create --driver "${builder_driver}" --use --name "${builder_name}"
+}
+
 function build_image() {
   local is_dev_container="false"
   local build_folder="${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}"
@@ -254,57 +274,16 @@ function build_image() {
   print "Building ${IMAGE_NAME} from:"
   log_directory_contents "${build_folder}"
 
-  # Decide builder driver
+  # Decide builder name and driver
   local builder_driver="docker-container"
+  local builder_name="analyze-docker-${REVISION}"
   if [[ "${NO_PULL_USE_EXISTING}" == "true" && "${MULTI_ARCH_FLAG}" != "true" && "${PUSH_FLAG}" != "true" ]]; then
     builder_driver="docker" # local daemon to reuse local base images
+    builder_name="default"
   fi
+  ensure_using_right_builder_and_driver "${builder_name}" "${builder_driver}"
 
-  # Pick builder name
-  local BUILDER_NAME
-  if [[ "${builder_driver}" == "docker" ]]; then
-    # The docker driver uses the legacy local builder; typically named "default"
-    BUILDER_NAME="default"
-  else
-    BUILDER_NAME="analyze-docker-${REVISION}"
-  fi
-
-  # Ensure/Select the builder
-  if [[ "${builder_driver}" == "docker" ]]; then
-    # Do not attempt to create additional docker driver instances; reuse existing
-    if docker buildx ls --format '{{.Name}}' | grep -qx "${BUILDER_NAME}"; then
-      echo "Using existing docker driver builder ${BUILDER_NAME}"
-      docker buildx use "${BUILDER_NAME}"
-    else
-      # Fallback: try to use default; if missing, try to create once
-      echo "Selecting docker driver builder ${BUILDER_NAME}"
-      if ! docker buildx use "${BUILDER_NAME}" >/dev/null 2>&1; then
-        echo "Default builder not present; creating docker driver builder ${BUILDER_NAME}"
-        docker buildx create --driver docker --use --name "${BUILDER_NAME}" || docker buildx use "${BUILDER_NAME}"
-      fi
-    fi
-  else
-    # Manage docker-container builders per revision
-    local existing_driver
-    existing_driver=""
-    if docker buildx ls --format '{{.Name}}' | grep -qx "${BUILDER_NAME}"; then
-      existing_driver=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | awk -F': ' '/^Driver:/ {print $2}' | head -n1)
-    fi
-    if [[ -n "${existing_driver}" ]]; then
-      echo "Using existing builder instance ${BUILDER_NAME} (${existing_driver})"
-      if [[ "${existing_driver}" != "${builder_driver}" ]]; then
-        echo "Recreating builder ${BUILDER_NAME} with driver ${builder_driver}"
-        docker buildx rm "${BUILDER_NAME}"
-        docker buildx create --driver "${builder_driver}" --use --name "${BUILDER_NAME}"
-      else
-        docker buildx use "${BUILDER_NAME}"
-      fi
-    else
-      echo "Creating new builder instance ${BUILDER_NAME} with driver ${builder_driver}"
-      docker buildx create --driver "${builder_driver}" --use --name "${BUILDER_NAME}"
-    fi
-  fi
-
+  # Lastly, we do the docker build. VSC devcontainers are a special-case though.
   if [[ "${is_dev_container}" == "true" ]]; then
     # Use devcontainer CLI instead to build image.
     # This uses buildx internally but supports fewer, and different, arguments.
@@ -333,6 +312,8 @@ function build_image() {
     local cmd=( \
       docker buildx build \
       "${extra_args[@]}" \
+      --sbom=true \
+      --attest 'type=provenance,mode=max' \
       --build-arg revision="${REVISION}" \
       --build-arg version="${VERSION}" \
       "${build_folder}" \
