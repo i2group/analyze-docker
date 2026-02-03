@@ -330,4 +330,5 @@ function main() {
   prepare_build_context
   build_image
 }
+
 main "$@"
