@@ -12,7 +12,7 @@ ARG version
 
 # Inspired by: https://github.com/31z4/zookeeper-docker
 # but then re-arranged to multi-stage build and UBI base image
-ARG ZK_VERSION="3.9.4"
+ARG ZK_VERSION="3.9.5"
 ARG GPG_KEY=3F7A1D16FA4217B1DC75E1C9FFE35B7F15DFA1BA
 
 
@@ -65,7 +65,7 @@ RUN set -eux; \
     ddist "$DISTRO_NAME.tar.gz" "zookeeper/$SHORT_DISTRO_NAME/$DISTRO_NAME.tar.gz"; \
     ddist "$DISTRO_NAME.tar.gz.asc" "zookeeper/$SHORT_DISTRO_NAME/$DISTRO_NAME.tar.gz.asc"; \
     export GNUPGHOME="$(mktemp -d)"; \
-    gpg --keyserver hkps://keyserver.pgp.com --recv-key "$GPG_KEY" || \
+    gpg --keyserver hkps://keyserver.pgp.com --recv-keys "$GPG_KEY" || \
     gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys "$GPG_KEY" || \
     gpg --keyserver hkps://pgp.mit.edu --recv-keys "$GPG_KEY"; \
     gpg --batch --verify "$DISTRO_NAME.tar.gz.asc" "$DISTRO_NAME.tar.gz"; \
