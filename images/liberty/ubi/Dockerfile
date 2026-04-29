@@ -30,9 +30,9 @@ LABEL maintainer="i2 Group" \
   description="This image contains the Open Liberty runtime with OpenJ9 JDK 11 and Red Hat's UBI as the base OS.  For more information on this image please see https://github.com/OpenLiberty/ci.docker#building-an-application-image" \
   license="MIT"
 
-COPY --chown=1001:0 docker-entrypoint.sh /opt/docker-entrypoint.sh
-COPY --chown=1001:0 environment.sh /opt/environment.sh
-COPY --chown=1001:0 cert_tools.sh /opt/cert_tools.sh
+COPY --chmod=755 --chown=1001:0 docker-entrypoint.sh /opt/docker-entrypoint.sh
+COPY --chmod=755 --chown=1001:0 environment.sh /opt/environment.sh
+COPY --chmod=755 --chown=1001:0 cert_tools.sh /opt/cert_tools.sh
 
 USER root
 

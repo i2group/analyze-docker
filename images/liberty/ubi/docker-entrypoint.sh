@@ -30,9 +30,12 @@ file_env 'SSL_ADDITIONAL_TRUST_CERTIFICATES'
 if [[ "${SSL_ADDITIONAL_TRUST_CERTIFICATES}" == "None" ]]; then
   SSL_ADDITIONAL_TRUST_CERTIFICATES=""
 fi
+file_env 'LTPA_KEYS_PASSWORD'
 
 KEYSTORE_PASS="$(openssl rand -base64 16)"
 export KEYSTORE_PASS
+# Capture the original generated value before APP_SECRETS or entrypoint.d can mutate KEYSTORE_PASS
+readonly _KEYSTORE_PASS_ORIG="${KEYSTORE_PASS}"
 TMP_SECRETS="/tmp/i2acerts"
 rm -rf "${TMP_SECRETS}"
 mkdir "${TMP_SECRETS}"
@@ -200,6 +203,40 @@ for file in /opt/entrypoint.d/*; do
     . "${file}"
   fi
 done
+
+# Liberty 26.0.0.4+ reads ltpa_keys_password (higher priority) or keystore_password for LTPA.
+# - LTPA_KEYS_PASSWORD set: export as ltpa_keys_password so Liberty can decrypt a pre-existing
+#   keys file and preserve LTPA session continuity across restarts.
+# - ltpa_keys_password already set directly: Liberty already has the password, leave keys intact.
+# - Neither set: persist the generated keystore_password so restarts reuse the same password,
+#   allowing Liberty to decrypt any ltpa.keys it previously created.
+_LTPA_PASS_FILE="/output/resources/security/ltpa-keystore.pass"
+_effective_keystore_pass="${_KEYSTORE_PASS_ORIG}"
+if [[ -n "${LTPA_KEYS_PASSWORD}" ]]; then
+  export ltpa_keys_password="${LTPA_KEYS_PASSWORD}"
+elif [[ -z "${ltpa_keys_password}" ]]; then
+  mkdir -p "$(dirname "${_LTPA_PASS_FILE}")"
+  if [[ -f "${_LTPA_PASS_FILE}" ]]; then
+    _effective_keystore_pass="$(cat "${_LTPA_PASS_FILE}")"
+    if [[ -z "${_effective_keystore_pass}" ]]; then
+      echo "ERROR: ${_LTPA_PASS_FILE} is empty or corrupt. Delete it to allow regeneration." >&2
+      exit 1
+    fi
+  else
+    # On first start (no pass file): remove any existing ltpa.keys encrypted with an unknown
+    # password so Liberty can generate fresh keys with the password we are about to persist.
+    rm -f /output/resources/security/ltpa.keys || {
+      echo "ERROR: Cannot remove /output/resources/security/ltpa.keys." \
+        "Set LTPA_KEYS_PASSWORD to the password used to encrypt it." >&2
+      exit 1
+    }
+    _LTPA_PASS_TMP="${_LTPA_PASS_FILE}.${$}.tmp"
+    printf '%s' "${_effective_keystore_pass}" > "${_LTPA_PASS_TMP}"
+    chmod 640 "${_LTPA_PASS_TMP}"
+    mv "${_LTPA_PASS_TMP}" "${_LTPA_PASS_FILE}"
+  fi
+fi
+export keystore_password="${_effective_keystore_pass}"
 
 # Pass on to the real server run
 exec "$@"
