@@ -43,12 +43,12 @@ function print() {
 function print_error_and_usage() {
   printf "\n\e[31mERROR: %s\n" "$*" >&2
   printf "\e[0m" >&2
-  echo -e "${USAGE}" >&2
+  echo "${USAGE}" >&2
   exit 1
 }
 
 function help() {
-  echo -e "${USAGE}"
+  echo "${USAGE}"
   exit 0
 }
 
@@ -109,10 +109,10 @@ function parse_arguments() {
     print_error_and_usage "Version needs to be passed to be able to build"
   fi
   if [[ ! "${VERSION}" =~ ^[-_.a-zA-Z0-9]+$ ]]; then
-    print_error_and_usage "Invalid revision: '${VERSION}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
+    print_error_and_usage "Invalid version: '${VERSION}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
   fi
 
-  if [[ ! "${REVISION}" =~ ^[-_a-z.A-Z0-9]+$ ]]; then
+  if [[ ! "${REVISION}" =~ ^[-_.a-zA-Z0-9]+$ ]]; then
     print_error_and_usage "Invalid revision: '${REVISION}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
   fi
 
@@ -121,7 +121,7 @@ function parse_arguments() {
   fi
   local tag
   for tag in "${TAGS[@]}"; do
-    if [[ -z "${tag}" || ! "${tag}" =~ ^[-_a-z.A-Z0-9]+$ ]]; then
+    if [[ -z "${tag}" || ! "${tag}" =~ ^[-_.a-zA-Z0-9]+$ ]]; then
       print_error_and_usage "Invalid tag: '${tag}'. It must be a string containing only a-z, A-Z, 0-9, period, underscores and minus."
     fi
   done
