@@ -33,7 +33,18 @@ LABEL name="Postgres" \
   description="This image contains Postgres server with PostGIS extension in Debian OS." \
   license="MIT"
 
-RUN apt-get update \
+# bookworm-updates causes apt to fail with "getline (12: Cannot allocate memory)"
+# when running under QEMU arm64 emulation on Ubuntu 24.04 CI hosts. The root
+# cause is in QEMU user-mode emulation's virtual address space handling; no
+# upstream fix has been identified. bookworm-updates only provides non-security
+# stability patches (e.g. tzdata); security fixes remain in bookworm-security.
+# Supports both classic (/etc/apt/sources.list) and DEB822 format
+# (/etc/apt/sources.list.d/debian.sources) as postgres base images use DEB822.
+# To check if the upstream issue is resolved, remove these two sed lines,
+# push to a branch, and verify CI passes consistently. See OPS-2264.
+RUN { [ -f /etc/apt/sources.list ] && sed -i '/bookworm-updates/d' /etc/apt/sources.list; } || true \
+  && { [ -f /etc/apt/sources.list.d/debian.sources ] && sed -i 's/ bookworm-updates//' /etc/apt/sources.list.d/debian.sources; } || true \
+  && apt-get update \
   && apt-get install -y --no-install-recommends \
   ca-certificates \
   postgresql-${POSTGRES_VERSION}-postgis-${POSTGIS_VERSION} \
