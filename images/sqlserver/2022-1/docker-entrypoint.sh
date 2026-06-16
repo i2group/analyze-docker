@@ -13,7 +13,16 @@ fi
 
 . /opt/environment.sh
 
-file_env 'SA_PASSWORD'
+function file_env_if_set() {
+  local target_var="$1"
+  local file_var="${target_var}_FILE"
+  if [[ "${!target_var+x}" == "x" || "${!file_var+x}" == "x" ]]; then
+    file_env "${target_var}"
+  fi
+}
+
+file_env_if_set 'MSSQL_SA_PASSWORD'
+file_env_if_set 'SA_PASSWORD'
 
 MSSQL_CONF_FILE="/var/opt/mssql/mssql.conf"
 

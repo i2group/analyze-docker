@@ -64,6 +64,13 @@ RUN mkdir -p /opt/mssql-tools && \
 
 USER "${USER}"
 
-ENTRYPOINT ["/opt/mssql/bin/permissions_check.sh", "/opt/docker-entrypoint.sh"]
+# Maintenance note: Our ENTRYPOINT needs to prepend our entrypoint script to the base image's ENTRYPOINT.
+# So if they change their base image's ENTRYPOINT, ours needs to change too.
+# i.e. ENTRYPOINT=( "our_script" "${BASE_IMAGE_ENTRYPOINT[@]}" )
+ENTRYPOINT ["/opt/docker-entrypoint.sh", "/opt/mssql/bin/launch_sqlservr.sh"]
+
+# Maintenance note: Our CMD needs to be exactly the same as the base image's CMD.
+# We didn't want to change it, but docker clears CMD when an ENTRYPOINT is specified (which we just did),
+# so we have to put it back to whatever the base image's CMD was.
 CMD ["/opt/mssql/bin/sqlservr"]
 
