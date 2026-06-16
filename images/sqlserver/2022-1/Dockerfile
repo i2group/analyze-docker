@@ -35,15 +35,6 @@ ARG USER=mssql
 COPY --chown="${USER}:0" docker-entrypoint.sh /opt/docker-entrypoint.sh
 COPY --chown="${USER}:0" environment.sh /opt/environment.sh
 
-# Lists packages (space separated) that we do not want to update.
-#
-# Due to a bug in OpenSSL causing SQL Server connection error 'TCP Provider: Error code 0x68'
-# we are currently excluding all OpenSSL related packages from updating until the issue has 
-# been resolved upstream.
-#
-# cspell:ignore openssl libssl libcrypto libcurl cryptsetup curl
-ARG EXCLUDED_PACKAGES='openssl* libssl* libcrypto* libcurl-minimal cryptsetup-libs curl-minimal'
-
 RUN set -eux; \
   mkdir -p /run/secrets /backup /var/i2a-data; \
   chown -R "${USER}" /tmp /run/secrets /backup /var/i2a-data; \
@@ -52,7 +43,7 @@ RUN set -eux; \
   RHEL_VERSION="$(rpm -q --queryformat '%{VERSION}' redhat-release | cut -d. -f1)"; \
   curl -fL --connect-timeout 10 --retry 3 --retry-delay 10 --retry-max-time 60 --progress-bar -o /etc/yum.repos.d/mssql-server.repo "https://packages.microsoft.com/config/rhel/${RHEL_VERSION}/mssql-server-${SQLSERVER_VERSION}.repo"; \
   # ACCEPT_EULA=y to update mssql packages
-  ACCEPT_EULA=Y dnf -y --exclude="${EXCLUDED_PACKAGES}" update; \
+  ACCEPT_EULA=Y dnf -y update; \
   dnf -y --nodocs install mssql-server-fts \
   ca-certificates; \
   dnf clean all;
