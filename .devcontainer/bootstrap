@@ -156,7 +156,11 @@ function post_start() {
     echo "Installing CircleCI dynamic config dependencies..."
     (
       set -x
-      cd .circleci/dynamic && npm install --omit=dev
+      cd .circleci/dynamic
+      python3 -m venv .venv
+      . .venv/bin/activate
+      pip install uv
+      uv sync
     )
   fi
   echo "Dev Container is ready"

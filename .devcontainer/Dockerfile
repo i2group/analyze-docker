@@ -16,6 +16,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y update \
     && apt-get -y install --no-install-recommends \
       maven \
+      python3 \
+      python3-pip \
+      python3-venv \
     && apt-get -y autoremove \
     && apt-get -y clean \
     && rm -rf /var/lib/apt/lists/*

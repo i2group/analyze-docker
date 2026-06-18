@@ -321,6 +321,16 @@ function build_image() {
     if [[ "${CI:-false}" == "true" && "${NO_PULL_USE_EXISTING}" == "false" ]]; then
       extra_args+=("--pull=true")
     fi
+    if [[ "${NO_CACHE}" == "false" ]]; then
+      local cache_folder="${SCRIPT_DIR}/.cache/docker/${IMAGE_NAME}/${VERSION}"
+      rm -rf "${cache_folder}-new"
+      extra_args+=(
+        --cache-from "type=local,src=${cache_folder}"
+        --cache-to "type=local,dest=${cache_folder}-new,mode=max"
+      )
+    else
+      local cache_folder=""
+    fi
     # --sbom and --attest require an image registry destination (push or multi-arch manifest)
     # and are incompatible with --load (local builds). Only apply them when pushing or
     # building multi-arch images.
@@ -337,6 +347,10 @@ function build_image() {
     )
     print "Building ${IMAGE_NAME} using command ${cmd[*]}"
     "${cmd[@]}"
+    if [[ -n "${cache_folder}" && -e "${cache_folder}-new" ]]; then
+      rm -rf "${cache_folder}"
+      mv -f "${cache_folder}-new" "${cache_folder}"
+    fi
   fi
   echo "Success"
 }

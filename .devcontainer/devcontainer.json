@@ -35,8 +35,8 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "charliermarsh.ruff",
         "circleci.circleci",
-        "dbaeumer.vscode-eslint",
         "eamodio.gitlens",
         "esbenp.prettier-vscode",
         "exiasr.hadolint",
