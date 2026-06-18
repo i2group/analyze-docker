@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # i2, i2 Group, the i2 Group logo, and i2group.com are trademarks of N.Harris Computer Corporation.
-# © N.Harris Computer Corporation (2022-2024)
+# © N.Harris Computer Corporation (2022-2026)
 #
 # SPDX short identifier: MIT
 
@@ -138,7 +138,6 @@ function parse_arguments() {
 }
 
 function test_image_labels() {
-  local image_name="$1"
   local required_labels=(
     "description"
     "license"
@@ -150,25 +149,25 @@ function test_image_labels() {
   )
   # Inspect the image and extract the labels
   local labelsJson
-  labelsJson=$(docker inspect --format '{{ json .Config.Labels }}' "${image_name}")
+  labelsJson=$(docker inspect --format '{{ json .Config.Labels }}' "${IMAGE}")
   local exit_code=0
   # Check that required labels are set and non-empty
   local label_name
   for label_name in "${required_labels[@]}"; do
     if ! jq -e --arg key "${label_name}" '.[$key] and .[$key] != ""' <<< "${labelsJson}" > /dev/null; then
-      echo "ERROR: Label '${label_name}' is missing or empty in image '${image_name}'" >&2
+      echo "ERROR: Label '${label_name}' is missing or empty in image '${IMAGE}'" >&2
       exit_code=1
     fi
   done
   # if REVISION is set, check that it matches the label
   if [[ -n "${REVISION}" ]]; then
     if ! jq -e --arg key "revision" --arg value "${REVISION}" '.[$key] == $value' <<< "${labelsJson}" > /dev/null; then
-      echo "ERROR: Label 'revision' is not set to '${REVISION}' in image '${image_name}'" >&2
+      echo "ERROR: Label 'revision' is not set to '${REVISION}' in image '${IMAGE}'" >&2
       exit_code=1
     fi
   fi
   if [[ "${exit_code}" == 0 ]]; then
-    echo "INFO: All required labels are correctly set in image '${image_name}'"
+    echo "INFO: All required labels are correctly set in image '${IMAGE}'"
   fi
   return "${exit_code}"
 }
@@ -196,7 +195,6 @@ BASH_XTRACEFD=3; \
 set -euxo pipefail; \
 ${test_command}"
   )
-
   if (
       BASH_XTRACEFD=1
       set -x
@@ -206,18 +204,15 @@ ${test_command}"
         "${IMAGE}" \
         "${container_command[@]}"
     ); then
-    echo "  PASSED"
+    return 0
   else
     local exit_code="$?"
-    echo "ERROR: Tests failed, exit code ${exit_code}" >&2
+    echo "ERROR: Bash command '${test_command}' failed with exit code ${exit_code}" >&2
     return "${exit_code}"
   fi
 }
 
-function main() {
-  parse_arguments "$@"
-
-  print "Testing ${IMAGE} from images/${IMAGE_NAME}/${VERSION}"
+function run_image_test_code() {
   if [[ -r "images/${IMAGE_NAME}/${VERSION}/test.sh" ]]; then
     # shellcheck disable=SC1090
     ( source "images/${IMAGE_NAME}/${VERSION}/test.sh" )
@@ -225,9 +220,28 @@ function main() {
     # shellcheck disable=SC1090
     ( source "images/${IMAGE_NAME}/test.sh" )
   else
-    print_error_and_usage "No test.sh found for image ${IMAGE} at images/${IMAGE_NAME}/${VERSION}/test.sh or images/${IMAGE_NAME}/test.sh"
+    echo "ERROR: No test.sh found for image ${IMAGE} at images/${IMAGE_NAME}/${VERSION}/test.sh or images/${IMAGE_NAME}/test.sh" >&2
+    return 1
   fi
-  test_image_labels "${IMAGE}"
+}
+
+function run_tests_for_image() {
+  local return_code=0
+  run_image_test_code || return_code="$?"
+  test_image_labels || return_code="$?"
+  return "${return_code}"
+}
+
+function main() {
+  parse_arguments "$@"
+  print "Testing ${IMAGE} from images/${IMAGE_NAME}/${VERSION}"
+  if run_tests_for_image; then
+    echo "  PASSED"
+  else
+    local exit_code="$?"
+    echo "ERROR: Tests failed, exit code ${exit_code}" >&2
+    return "${exit_code}"
+  fi
 }
 
 main "$@"
