@@ -8,6 +8,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# shellcheck source=utils/pull_image.sh
+. "${SCRIPT_DIR}/utils/pull_image.sh"
+
 USAGE="""
 Usage:
   build.sh -i <image_name> -v <version> [-r <revision>] [-t <tag>]... [-p] [-m] [-n] [-e]
@@ -274,11 +277,20 @@ function build_image() {
   print "Building ${IMAGE_NAME} from:"
   log_directory_contents "${build_folder}"
 
-  # Decide builder name and driver
-  local builder_driver="docker-container"
-  local builder_name="analyze-docker-${REVISION}"
-  if [[ "${NO_PULL_USE_EXISTING}" == "true" && "${MULTI_ARCH_FLAG}" != "true" && "${PUSH_FLAG}" != "true" ]]; then
-    builder_driver="docker" # local daemon to reuse local base images
+  # Decide builder name and driver.
+  # CI environments (GitHub Actions, Jenkins, GitLab CI, etc.) set CI=true and
+  # need the docker-container driver for full feature support (multi-arch, sbom, attestation).
+  # Local builds use the plain docker driver, which shares the host daemon's image
+  # store so locally tagged base images are visible to the build.
+  # The -e flag (NO_PULL_USE_EXISTING) also forces local docker driver so that
+  # existing local base images are reused rather than pulled.
+  local builder_driver
+  local builder_name
+  if [[ "${CI:-false}" == "true" && "${NO_PULL_USE_EXISTING}" != "true" ]]; then
+    builder_driver="docker-container"
+    builder_name="analyze-docker-${REVISION}"
+  else
+    builder_driver="docker"
     builder_name="default"
   fi
   ensure_using_right_builder_and_driver "${builder_name}" "${builder_driver}"
@@ -306,14 +318,19 @@ function build_image() {
     for tag in "${TAGS[@]}"; do
       extra_args+=( "--tag" "${full_image_name_without_colon_tag}:${tag}" )
     done
-    if [[ "${NO_PULL_USE_EXISTING}" == "false" ]]; then
+    if [[ "${CI:-false}" == "true" && "${NO_PULL_USE_EXISTING}" == "false" ]]; then
       extra_args+=("--pull=true")
+    fi
+    # --sbom and --attest require an image registry destination (push or multi-arch manifest)
+    # and are incompatible with --load (local builds). Only apply them when pushing or
+    # building multi-arch images.
+    if [[ "${PUSH_FLAG}" == "true" || "${MULTI_ARCH_FLAG}" == "true" ]]; then
+      extra_args+=("--sbom=true")
+      extra_args+=("--attest" "type=provenance,mode=max")
     fi
     local cmd=( \
       docker buildx build \
       "${extra_args[@]}" \
-      --sbom=true \
-      --attest 'type=provenance,mode=max' \
       --build-arg revision="${REVISION}" \
       --build-arg version="${VERSION}" \
       "${build_folder}" \
@@ -324,10 +341,68 @@ function build_image() {
   echo "Success"
 }
 
+# For local dev builds the base image tag won't exist in the registry (e.g. :ubi-jdk21-main-dev).
+# This function finds the latest published revision for each such base image, pulls it, and
+# re-tags it locally with the -dev suffix so the build can proceed without touching the Dockerfile.
+function ensure_base_images_available() {
+  local build_folder="${SCRIPT_DIR}/images/${IMAGE_NAME}/${VERSION}"
+  local dockerfile="${build_folder}/Dockerfile"
+
+  if [[ ! -f "${dockerfile}" ]]; then
+    # Devcontainer images keep their Dockerfile inside .devcontainer/
+    dockerfile="${build_folder}/.devcontainer/Dockerfile"
+  fi
+
+  if [[ ! -f "${dockerfile}" ]]; then
+    echo "ERROR: No Dockerfile found for ${IMAGE_NAME}/${VERSION} (checked ${build_folder}/Dockerfile and ${build_folder}/.devcontainer/Dockerfile)" >&2
+    return 1
+  fi
+
+  # Collect FROM lines that reference ${revision}.
+  # grep exits 1 when there are no matches, which is not an error here.
+  local dockerfile_from_lines
+  dockerfile_from_lines="$(grep -E '^FROM [^ ].*\$\{revision\}' "${dockerfile}")" || true
+
+  if [[ -z "${dockerfile_from_lines}" ]]; then
+    return
+  fi
+
+  # Pass 1: parse FROM lines into an array of image references
+  local -a images_we_need=()
+  local _from image_ref _remainder
+  while read -r _from image_ref _remainder; do
+    images_we_need+=( "${image_ref}" )
+  done <<< "${dockerfile_from_lines}"
+
+  # Pass 2: pull and tag each image
+  for image_ref in "${images_we_need[@]}"; do
+    # Build the local tag we need by substituting ${revision} -> dev
+    local local_tag="${image_ref/\$\{revision\}/dev}"
+
+    # If already present locally, nothing to do
+    if docker image inspect "${local_tag}" >/dev/null 2>&1; then
+      echo "Base image ${local_tag} already available locally, skipping pull."
+      continue
+    fi
+
+    # The published (non-dev) tag is the image reference with -${revision} stripped.
+    # For example: i2group/i2eng-foo:bar-${revision} -> i2group/i2eng-foo:bar
+    local base_tag="${image_ref/-\$\{revision\}/}"
+
+    echo "Pulling ${base_tag} ..."
+    pull_image_for_all_architectures "${base_tag}" "${MULTI_ARCH_FLAG}"
+    echo "Tagging ${base_tag} => ${local_tag} ..."
+    docker tag "${base_tag}" "${local_tag}"
+  done
+}
+
 function main() {
   parse_arguments "$@"
   validate
   prepare_build_context
+  if [[ "${REVISION}" == "dev" ]]; then
+    ensure_base_images_available
+  fi
   build_image
 }
 
