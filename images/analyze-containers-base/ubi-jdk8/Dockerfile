@@ -96,8 +96,7 @@ ARG XMLSTARLET_VERSION
 ARG XMLSTARLET_URL
 
 # Install required dependencies
-RUN microdnf -y update && \
-    microdnf -y install \
+RUN microdnf -y --refresh install \
       ca-certificates \
       coreutils-single \
       gcc \
@@ -202,8 +201,7 @@ USER root
 
 # Install shared packages
 RUN set -eux; \
-  microdnf -y update && \
-  microdnf -y install ${shared_packages} && \
+  microdnf -y --refresh install ${shared_packages} && \
   microdnf clean all;
 
 # Copy built RPMs from builder stage and install them so they appear in RPM DB

@@ -30,13 +30,12 @@ LABEL name="Analyze Containers Connectors Base" \
 # hadolint ignore=DL3002
 USER root
 
-# We want latest of all packages when building the image
+# Install more packages.
 # hadolint ignore=DL3013,DL3041
 RUN set -eux; \
-  dnf -y update \
-  && dnf -y install \
-  jq \
-  python3.12-pip \
+  dnf -y --refresh install \
+    jq \
+    python3.12-pip \
   # Ensure symlinks are created for the correct version of Pip
   && ln -sf /usr/bin/pip3.12 /usr/bin/pip3 \
   && ln -sf /usr/bin/pip3.12 /usr/bin/pip \

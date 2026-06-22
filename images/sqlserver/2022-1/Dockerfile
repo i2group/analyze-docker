@@ -11,7 +11,7 @@ ARG revision
 ARG version
 
 ARG SQLSERVER_VERSION=2022
-FROM "mcr.microsoft.com/mssql/rhel/server:${SQLSERVER_VERSION}-latest"
+FROM mcr.microsoft.com/mssql/rhel/server:${SQLSERVER_VERSION}-latest
 
 # Bring global-scope args into the build stage
 ARG revision

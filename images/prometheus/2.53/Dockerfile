@@ -76,11 +76,10 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 RUN set -eux; \
-  dnf -y update; \
-  dnf -y install \
-  ca-certificates \
-  gettext \
-  httpd-tools \
+  dnf -y --refresh install \
+    ca-certificates \
+    gettext \
+    httpd-tools \
   && dnf clean all
 
 # Get the binary from the builder image

@@ -10,18 +10,16 @@ ARG revision
 # version = image version = name of the directory this Dockerfile is in
 ARG version
 
-ARG CONNECTOR_DESIGNER_IMAGE="i2group/i2eng-connector-designer"
 ARG NODEJS_VERSION=18
-ARG NODEJS_MINIMAL_BASE_IMAGE="i2group/i2eng-analyze-containers-connectors-base-minimal"
 
 # We grab data from the connector-designer image as that's what controls what code
 # will be running in this image.
-FROM "${CONNECTOR_DESIGNER_IMAGE}:${version}-${revision}" as connector-designer
+FROM i2group/i2eng-connector-designer:${version}-${revision} as connector-designer
 # ...but this contains both dev and prod dependencies and we only want the prod ones.
 RUN cd /opt/app-root/src/connector_template && npm prune --production
 
 # Use a minimal base image
-FROM "${NODEJS_MINIMAL_BASE_IMAGE}:${NODEJS_VERSION}-${revision}"
+FROM i2group/i2eng-analyze-containers-connectors-base-minimal:${NODEJS_VERSION}-${revision}
 
 # Bring global-scope args into the build stage
 ARG revision

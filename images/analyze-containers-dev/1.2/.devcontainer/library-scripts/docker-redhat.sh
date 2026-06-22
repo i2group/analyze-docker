@@ -109,7 +109,7 @@ curl -fsSL https://download.docker.com/linux/${OSNAME}/gpg >/tmp/docker.gpg &&
   rpm --import /tmp/docker.gpg
 
 rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-${RHEL_COMPAT_VER}.noarch.rpm
-microdnf install -y yum-utils device-mapper-persistent-data lvm2
+microdnf -y install yum-utils device-mapper-persistent-data lvm2
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
 microdnf -y update

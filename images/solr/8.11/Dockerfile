@@ -144,7 +144,7 @@ LABEL name="Apache Solr" \
   license="MIT"
 
 RUN set -eux; \
-    microdnf -y install \
+    microdnf -y --refresh install \
       acl \
       lsof \
       procps \
@@ -174,7 +174,7 @@ ENV JAVA_HOME="/opt/java/openjdk" \
 
 # Install shadow-utils temporarily, use it, then remove it to keep image small
 RUN set -eux; \
-    microdnf -y install shadow-utils && \
+    microdnf -y --refresh install shadow-utils && \
     groupadd -r --gid "$SOLR_GID" "$SOLR_GROUP" && \
     useradd -r --uid "$SOLR_UID" --gid "$SOLR_GID" "$SOLR_USER" && \
     microdnf -y remove shadow-utils && \

@@ -36,10 +36,8 @@ COPY --chmod=755 --chown=1001:0 cert_tools.sh /opt/cert_tools.sh
 
 USER root
 
-RUN dnf -y update \
-  && dnf -y install \
+RUN dnf -y --refresh install \
   jq \
-  # Clean up
   && dnf clean all
 
 USER 1001

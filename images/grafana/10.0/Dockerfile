@@ -11,7 +11,7 @@ ARG revision
 ARG version
 
 ARG GRAFANA_VERSION=10.0.3
-FROM "grafana/grafana-oss:${GRAFANA_VERSION}"
+FROM grafana/grafana-oss:${GRAFANA_VERSION}
 
 # Bring global-scope args into the build stage
 ARG revision

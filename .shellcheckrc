@@ -1,0 +1,5 @@
+# Tell shellcheck it's OK to follow sources not explicitly listed on the CLI.
+external-sources=true
+
+# Resolve source= paths like internal/test/connectors.sh from the repo root.
+source-path=.

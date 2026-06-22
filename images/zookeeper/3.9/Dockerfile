@@ -115,8 +115,7 @@ ENV JAVA_HOME="/opt/java/openjdk" \
 # nmap package is required to supply cli netcat (command nc), this is required
 # for zookeeper status checking.
 RUN set -eux; \
-    microdnf -y update && \
-    microdnf -y install --setopt=install_weak_deps=0 \
+    microdnf -y --refresh install --setopt=install_weak_deps=0 \
       nmap \
     && \
     microdnf clean all;
@@ -124,7 +123,7 @@ RUN set -eux; \
 # Add a user with an explicit UID/GID and create necessary directories
 # Install shadow-utils temporarily, use it, then remove it to keep image small
 RUN set -eux; \
-    microdnf -y install shadow-utils && \
+    microdnf -y --refresh install shadow-utils && \
     groupadd -r zookeeper --gid=1000 && \
     useradd -r -g zookeeper --uid=1000 zookeeper && \
     mkdir -p "$ZOO_DATA_LOG_DIR" "$ZOO_DATA_DIR" "$ZOO_CONF_DIR" "$ZOO_LOG_DIR" && \

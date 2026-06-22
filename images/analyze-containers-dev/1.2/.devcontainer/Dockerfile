@@ -75,7 +75,7 @@ RUN microdnf -y update \
   # Install session manager plugin
   && if [[ "${ARCH}" == "aarch64" ]]; then RPM_NAME="linux_arm64"; else RPM_NAME="linux_64bit"; fi \
   && curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/${RPM_NAME}/session-manager-plugin.rpm" -o "session-manager-plugin.rpm" \
-  && dnf install -y session-manager-plugin.rpm \
+  && dnf -y install session-manager-plugin.rpm \
   # Install deps
   && microdnf -y install --setopt=install_weak_deps=0 \
     maven \
