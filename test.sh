@@ -227,6 +227,19 @@ function run_image_test_code() {
 
 function run_tests_for_image() {
   local return_code=0
+  # There's a race condition where the image may not be available
+  # immediately after a build, so we retry a few times.
+  # Worse, we might get a not-our-native-archicture image when we first pull,
+  # so we need to pull at least twice to be sure we have the right one.
+  local attempt
+  for attempt in {1..3}; do
+    ( set -x; docker pull "${IMAGE}" > /dev/null ) || true
+    sleep 1
+  done
+  if ! ( set -x; docker pull "${IMAGE}" ); then
+    echo "ERROR: Failed to pull image ${IMAGE} after ${attempt} attempts" >&2
+    return 1
+  fi
   run_image_test_code || return_code="$?"
   test_image_labels || return_code="$?"
   return "${return_code}"

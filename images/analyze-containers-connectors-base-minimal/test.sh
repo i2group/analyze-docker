@@ -5,12 +5,17 @@
 # $IMAGE_NAME is the name of the folder in the images/ directory for the image under test
 # $VERSION is the name of the folder in the IMAGE_NAME folder for the image under test
 
-function run_connector_image_tests() {
+. "${SCRIPT_DIR}/internal/test/connectors.sh"
+
+function run_ac_connector_base_image_tests() {
   local return_code=0
+  # We expect npm to be installed
   test_docker_image_using_bash_command 'npm --version' || return_code="$?"
-  # We expect node to be installed
-  test_docker_image_using_bash_command 'node --version' || return_code="$?"
+  # We expect the major node version to match the version of the image.
+  test_node_version_matches "${VERSION}" || return_code="$?"
+  # We expect node to be installed and not end of life
+  test_node_version_is_not_eol || return_code="$?"
   return "${return_code}"
 }
 
-run_connector_image_tests
+run_ac_connector_base_image_tests
