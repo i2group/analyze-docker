@@ -10,7 +10,7 @@ ARG revision
 # version = image version = name of the directory this Dockerfile is in
 ARG version
 
-ARG NODEJS_VERSION=18
+ARG NODEJS_VERSION=22
 
 # We grab data from the connector-designer image as that's what controls what code
 # will be running in this image.
