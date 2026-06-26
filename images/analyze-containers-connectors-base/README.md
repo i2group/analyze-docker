@@ -19,7 +19,6 @@ Contains base layers for connectors images built by Analyze Containers.
 
 - [`24`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-connectors-base/24/Dockerfile)
 - [`22`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-connectors-base/22/Dockerfile)
-- [`18`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-connectors-base/18/Dockerfile)
 
 ## License
 
