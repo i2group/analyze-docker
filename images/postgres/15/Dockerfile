@@ -15,7 +15,7 @@ ARG POSTGIS_VERSION=3
 
 # Inspired by: https://github.com/docker-library/postgres and https://github.com/postgis/docker-postgis
 # hadolint ignore=DL3049
-FROM postgres:${POSTGRES_VERSION}-bullseye
+FROM postgres:${POSTGRES_VERSION}-bookworm
 
 # Bring global-scope args into the build stage
 ARG revision

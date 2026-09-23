@@ -61,6 +61,7 @@ RUN microdnf -y update \
   # Install additional OS packages.
   # jq and curl already installed by common-redhat
   && dnf config-manager --nogpgcheck --add-repo https://cli.github.com/packages/rpm/gh-cli.repo \
+  && dnf config-manager --setopt=gh-cli.gpgcheck=0 --save \
   && ARCH=`uname -m` \
   && microdnf -y remove /usr/bin/python \
   && dnf -y module enable nodejs:20 \
@@ -69,8 +70,9 @@ RUN microdnf -y update \
   && if [[ "${ARCH}" == "aarch64" ]]; then YQ_PACKAGE_NAME="yq_linux_arm64"; else YQ_PACKAGE_NAME="yq_linux_amd64"; fi \
   && wget "https://github.com/mikefarah/yq/releases/download/${YQ_LATEST_VERSION}/${YQ_PACKAGE_NAME}.tar.gz" -O - | tar xz && mv "${YQ_PACKAGE_NAME}" /usr/bin/yq \
   # Install AWS CLI
-  && curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "awscliv2.zip" \
-  && unzip awscliv2.zip \
+  && curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "/tmp/awscli.zip" \
+  && unzip -q "/tmp/awscli.zip" \
+  && rm -rf "/tmp/awscli.zip" \
   && ./aws/install \
   # Install session manager plugin
   && if [[ "${ARCH}" == "aarch64" ]]; then RPM_NAME="linux_arm64"; else RPM_NAME="linux_64bit"; fi \
@@ -78,16 +80,16 @@ RUN microdnf -y update \
   && dnf -y install session-manager-plugin.rpm \
   # Install deps
   && microdnf -y install --setopt=install_weak_deps=0 \
-    maven \
-    diffutils \
     bc \
+    diffutils \
     gh \
-    python3.12 \
-    python3.12-pip \
-    nodejs \
-    npm \
     libxml2 \
     libxslt \
+    maven \
+    nodejs \
+    npm \
+    python3.12 \
+    python3.12-pip \
   # Clean up
   && microdnf clean all \
   && dnf clean all \
