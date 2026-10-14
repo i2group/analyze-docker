@@ -76,7 +76,7 @@ RUN set -eux; \
 
 
 # Stage 2: Create the final image
-FROM i2group/i2eng-analyze-containers-base:ubi-jdk17-${revision}
+FROM i2group/i2eng-analyze-containers-base:ubi-jdk21-${revision}
 
 # Bring global-scope args into the build stage, and add more
 ARG revision
@@ -90,7 +90,7 @@ LABEL name="Apache ZooKeeper" \
   maintainer="i2 Group" \
   version="${ZK_VERSION}" \
   revision="${revision}" \
-  summary="Apache ZooKeeper image based on Red Hat's UBI with Java 17." \
+  summary="Apache ZooKeeper image based on Red Hat's UBI with Java 21." \
   description="Apache ZooKeeper is a software project of the Apache Software Foundation, \
   providing an open source distributed configuration service, synchronization service, \
   and naming registry for large distributed systems." \

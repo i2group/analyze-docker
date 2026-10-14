@@ -17,7 +17,8 @@ Contains base layers for images built by Analyze Containers.
 
 ## Supported tags
 
-- [`ubi-jdk17`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-base/ubi-jdk17/Dockerfile)
+- [`ubi-jdk21`, `latest`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-base/ubi-jdk21/Dockerfile)
+- [`ubi-jdk17`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-base/ubi-jdk17/Dockerfile)
 - [`ubi-jdk8`](https://github.com/i2group/analyze-docker/blob/main/images/analyze-containers-base/ubi-jdk8/Dockerfile)
 
 ## License
