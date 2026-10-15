@@ -12,7 +12,7 @@ ARG version
 
 # Inspired by: https://github.com/31z4/zookeeper-docker
 # but then re-arranged to multi-stage build and UBI base image
-ARG ZK_VERSION="3.9.5"
+ARG ZK_VERSION="3.9.6"
 ARG GPG_KEY=3F7A1D16FA4217B1DC75E1C9FFE35B7F15DFA1BA
 
 
